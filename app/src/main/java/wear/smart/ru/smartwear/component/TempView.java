@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -17,41 +19,45 @@ import wear.smart.ru.smartwear.R;
 
 public class TempView extends View {
 
-    private Paint mPaint;
+    private TextPaint textPaint;
     public Bitmap bmpRound;
-    Context ctx;
+    private String text = "0.0";
 
     public TempView(Context context) {
         super(context);
-        ctx = context;
         bmpRound = BitmapFactory.decodeResource(getResources(), R.drawable.in_temp);
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setTextSize(16);
-        mPaint.setColor(0xFFFFFFFF);
-        mPaint.setStyle(Paint.Style.FILL);
+        createTextPaint();
     }
 
     public TempView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
-        ctx = context;
         bmpRound = BitmapFactory.decodeResource(getResources(), R.drawable.in_temp);
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setTextSize(16);
-        mPaint.setColor(0xFFFFFFFF);
-        mPaint.setStyle(Paint.Style.FILL);
+        createTextPaint();
     }
 
     public TempView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        ctx = context;
         bmpRound = BitmapFactory.decodeResource(getResources(), R.drawable.in_temp);
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setTextSize(16);
-        mPaint.setColor(0xFFFFFFFF);
-        mPaint.setStyle(Paint.Style.FILL);
+        createTextPaint();
+    }
+
+    /**
+     * Создаём TextPaint
+     */
+    private void createTextPaint() {
+        textPaint = new TextPaint();
+        textPaint.setAntiAlias(true);
+        textPaint.setTextSize(35 * getResources().getDisplayMetrics().density);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setColor(getResources().getColor(R.color.colorBlue500));
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     @Override
@@ -63,5 +69,7 @@ public class TempView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawBitmap(bmpRound, 0, 0,null);
+        canvas.drawText(text, 150, 180, textPaint);
+
     }
 }
