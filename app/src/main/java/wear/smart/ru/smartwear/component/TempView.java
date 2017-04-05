@@ -47,7 +47,7 @@ public class TempView extends View {
     private void createTextPaint() {
         textPaint = new TextPaint();
         textPaint.setAntiAlias(true);
-        textPaint.setTextSize(35 * getResources().getDisplayMetrics().density);
+        textPaint.setTextSize(24 * getResources().getDisplayMetrics().density);
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setColor(getResources().getColor(R.color.colorBlue500));
     }
@@ -69,7 +69,7 @@ public class TempView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         canvas.drawBitmap(bmpRound, 0, 0,null);
-        canvas.drawText(text, 150, 180, textPaint);
+        canvas.drawText(text, 96, 110, textPaint);
 
     }
 }

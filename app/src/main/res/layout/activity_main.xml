@@ -22,8 +22,8 @@
 
 
     <wear.smart.ru.smartwear.component.TempView
-        android:layout_width="152dp"
-        android:layout_height="152dp"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginRight="8dp"
