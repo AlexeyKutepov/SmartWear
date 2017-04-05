@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SmartWear</string>
+    <string name="null_point_null">0.0</string>
 </resources>
