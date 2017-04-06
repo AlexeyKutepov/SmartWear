@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">SmartWear</string>
     <string name="null_point_null">0.0</string>
+
+    <!-- Сообщения в диалоговых окнах-->
+    <string name="bluetooth_is_not_supported_dialog_message">Ваше устройство не поддерживает bluetooth</string>
+    <string name="bluetooth_is_not_supported_dialog_title">Ошибка</string>
+    <string name="search_devices_dialog_title">Поиск устройств</string>
+    <string name="search_devices_dialog_message">Пожалуйста, подождите…</string>
 </resources>
