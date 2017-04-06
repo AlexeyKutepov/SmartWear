@@ -20,6 +20,20 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintVertical_bias="1.0" />
 
+    <TextView
+        android:id="@+id/textViewOutTemp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorWhite"
+        android:textSize="14pt"
+        android:text="@string/null_point_null"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp" />
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,7 +51,7 @@
         android:id="@+id/imageViewTemp" />
 
     <TextView
-        android:id="@+id/textViewTemp"
+        android:id="@+id/textViewInTemp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/null_point_null"
