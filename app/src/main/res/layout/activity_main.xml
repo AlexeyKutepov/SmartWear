@@ -68,4 +68,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/verticalSeekBar" />
 
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:thumb="@drawable/switch_mode_thumb"
+        android:track="@drawable/switch_mode_selector"
+        android:switchMinWidth="65dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
 </android.support.constraint.ConstraintLayout>
