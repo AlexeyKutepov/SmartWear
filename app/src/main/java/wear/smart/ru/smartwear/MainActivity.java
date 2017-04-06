@@ -7,10 +7,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.service.BluetoothService;
@@ -25,6 +27,8 @@ public class MainActivity extends Activity {
 
     private SearchDeviceTask searchDeviceTask;
 
+    private ArrayAdapter<String> arrayAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +39,11 @@ public class MainActivity extends Activity {
          */
         progressDialog = new ProgressDialog(this);
         builder = new AlertDialog.Builder(this);
+
+        /*
+         * Интерфейс
+         */
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
 
         /*
          * Задачи
@@ -95,7 +104,7 @@ public class MainActivity extends Activity {
                 // Получаем объект BluetoothDevice из интента
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
-//                arrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                arrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
         }
     };
@@ -124,12 +133,25 @@ public class MainActivity extends Activity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             progressDialog.dismiss();
-//            if (arrayAdapter.isEmpty()) {
-//                builder.setMessage(R.string.devices_not_found_dialog_message)
-//                        .setTitle(R.string.devices_not_found_dialog_title);
-//                AlertDialog dialog = builder.create();
-//                dialog.show();
-//            }
+            if (arrayAdapter.isEmpty()) {
+                builder.setMessage(R.string.devices_not_found_dialog_message)
+                        .setTitle(R.string.devices_not_found_dialog_title)
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                bluetooth.startDiscovery();
+                                searchDeviceTask = new SearchDeviceTask();
+                                searchDeviceTask.execute();
+                            }
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
         }
     }
 
