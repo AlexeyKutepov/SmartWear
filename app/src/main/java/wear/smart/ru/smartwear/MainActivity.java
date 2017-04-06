@@ -13,10 +13,13 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import java.util.Arrays;
 
 import wear.smart.ru.smartwear.common.Constants;
+import wear.smart.ru.smartwear.component.VerticalSeekBar;
 import wear.smart.ru.smartwear.service.BluetoothService;
 
 public class MainActivity extends Activity {
@@ -30,6 +33,8 @@ public class MainActivity extends Activity {
     private SearchDeviceTask searchDeviceTask;
 
     private ArrayAdapter<String> arrayAdapter;
+    private Switch switchMode;
+    private VerticalSeekBar seekBarTemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +51,9 @@ public class MainActivity extends Activity {
          * Интерфейс
          */
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        seekBarTemp = (VerticalSeekBar) findViewById(R.id.seekBarTemp);
+        switchMode = (Switch) findViewById(R.id.switchMode);
+        switchMode.setOnCheckedChangeListener(onCheckedChangeListenerSwitchMode);
 
         /*
          * Задачи
@@ -107,6 +115,20 @@ public class MainActivity extends Activity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
                 arrayAdapter.add(device.getName() + "\n" + device.getAddress());
+            }
+        }
+    };
+
+    /**
+     * В зависимости от состояния переключателя руч/авто делаем доступными или недоступными элементы управления контроллером
+     */
+    CompoundButton.OnCheckedChangeListener onCheckedChangeListenerSwitchMode = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (isChecked) {
+                seekBarTemp.setEnabled(false);
+            } else {
+                seekBarTemp.setEnabled(true);
             }
         }
     };
