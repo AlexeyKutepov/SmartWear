@@ -14,6 +14,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 
+import java.util.Arrays;
+
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.service.BluetoothService;
 
@@ -58,7 +60,7 @@ public class MainActivity extends Activity {
 
         if (bluetooth != null) {
             if (bluetooth.isEnabled()) {
-                IntentFilter filter=new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                 registerReceiver(receiver, filter);
                 bluetooth.startDiscovery();
                 searchDeviceTask.execute();
@@ -85,7 +87,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            IntentFilter filter=new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             registerReceiver(receiver, filter);
             bluetooth.startDiscovery();
             searchDeviceTask.execute();
@@ -100,7 +102,7 @@ public class MainActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             // Когда найдено новое устройство
-            if(BluetoothDevice.ACTION_FOUND.equals(action)) {
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Получаем объект BluetoothDevice из интента
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
@@ -147,6 +149,21 @@ public class MainActivity extends Activity {
                                 bluetooth.startDiscovery();
                                 searchDeviceTask = new SearchDeviceTask();
                                 searchDeviceTask.execute();
+                            }
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            } else {
+                builder.setTitle(R.string.search_devices_result_dialog_title)
+                        .setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // The 'which' argument contains the index position
+                                // of the selected item)
+                            }
+                        })
+                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
                             }
                         });
                 AlertDialog dialog = builder.create();
