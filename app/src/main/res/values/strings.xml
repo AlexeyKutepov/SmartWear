@@ -6,6 +6,7 @@
     <string name="no">Нет</string>
     <string name="ok">OK</string>
     <string name="cancel">Отмена</string>
+    <string name="repeat_search">Повторить поиск</string>
 
     <!-- Сообщения в диалоговых окнах-->
     <string name="bluetooth_is_not_supported_dialog_message">Ваше устройство не поддерживает bluetooth</string>

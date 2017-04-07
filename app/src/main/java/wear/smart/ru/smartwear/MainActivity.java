@@ -28,7 +28,9 @@ public class MainActivity extends Activity {
     private Intent bluetoothService;
 
     private ProgressDialog progressDialog;
-    private AlertDialog.Builder builder;
+    private AlertDialog.Builder bluetoothNotSupportedBuilder;
+    private AlertDialog.Builder devicesNotFoundBuilder;
+    private AlertDialog.Builder devicesListBuilder;
 
     private SearchDeviceTask searchDeviceTask;
 
@@ -45,7 +47,9 @@ public class MainActivity extends Activity {
          * Диалоговые окна
          */
         progressDialog = new ProgressDialog(this);
-        builder = new AlertDialog.Builder(this);
+        devicesNotFoundBuilder = new AlertDialog.Builder(this);
+        devicesListBuilder = new AlertDialog.Builder(this);
+        bluetoothNotSupportedBuilder = new AlertDialog.Builder(this);
 
         /*
          * Интерфейс
@@ -70,7 +74,6 @@ public class MainActivity extends Activity {
             if (bluetooth.isEnabled()) {
                 IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                 registerReceiver(receiver, filter);
-                bluetooth.startDiscovery();
                 searchDeviceTask.execute();
             } else {
                 // Bluetooth выключен. Предложим пользователю включить его.
@@ -78,9 +81,9 @@ public class MainActivity extends Activity {
                 startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
             }
         } else {
-            builder.setMessage(R.string.bluetooth_is_not_supported_dialog_message)
+            bluetoothNotSupportedBuilder.setMessage(R.string.bluetooth_is_not_supported_dialog_message)
                     .setTitle(R.string.bluetooth_is_not_supported_dialog_title);
-            AlertDialog dialog = builder.create();
+            AlertDialog dialog = bluetoothNotSupportedBuilder.create();
             dialog.show();
         }
     }
@@ -97,7 +100,6 @@ public class MainActivity extends Activity {
         if (resultCode == RESULT_OK) {
             IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
             registerReceiver(receiver, filter);
-            bluetooth.startDiscovery();
             searchDeviceTask.execute();
         }
     }
@@ -140,6 +142,9 @@ public class MainActivity extends Activity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            bluetooth.cancelDiscovery();
+            arrayAdapter.clear();
+            bluetooth.startDiscovery();
             progressDialog.setTitle(R.string.search_devices_dialog_title);
             progressDialog.setMessage(getResources().getString(R.string.search_devices_dialog_message));
             progressDialog.show();
@@ -158,7 +163,7 @@ public class MainActivity extends Activity {
             super.onPostExecute(aVoid);
             progressDialog.dismiss();
             if (arrayAdapter.isEmpty()) {
-                builder.setMessage(R.string.devices_not_found_dialog_message)
+                devicesNotFoundBuilder.setMessage(R.string.devices_not_found_dialog_message)
                         .setTitle(R.string.devices_not_found_dialog_title)
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
@@ -168,19 +173,31 @@ public class MainActivity extends Activity {
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                bluetooth.startDiscovery();
                                 searchDeviceTask = new SearchDeviceTask();
                                 searchDeviceTask.execute();
                             }
                         });
-                AlertDialog dialog = builder.create();
+                AlertDialog dialog = devicesNotFoundBuilder.create();
                 dialog.show();
             } else {
-                builder.setTitle(R.string.search_devices_result_dialog_title)
+                devicesListBuilder.setTitle(R.string.search_devices_result_dialog_title)
                         .setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                // The 'which' argument contains the index position
-                                // of the selected item)
+                                stopService(bluetoothService);
+                                String item = arrayAdapter.getItem(which);
+                                if (item != null) {
+                                    String address = item.split("\n")[1];
+                                    bluetooth.cancelDiscovery();
+                                    bluetoothService.putExtra(Constants.MAC, address);
+                                    startService(bluetoothService);
+                                }
+                            }
+                        })
+                        .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                searchDeviceTask = new SearchDeviceTask();
+                                searchDeviceTask.execute();
                             }
                         })
                         .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -188,7 +205,7 @@ public class MainActivity extends Activity {
                             public void onClick(DialogInterface dialog, int which) {
                             }
                         });
-                AlertDialog dialog = builder.create();
+                AlertDialog dialog = devicesListBuilder.create();
                 dialog.show();
             }
         }
