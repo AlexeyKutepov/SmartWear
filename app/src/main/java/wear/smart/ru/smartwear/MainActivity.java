@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import java.util.Arrays;
 
@@ -37,6 +38,8 @@ public class MainActivity extends Activity {
     private ArrayAdapter<String> arrayAdapter;
     private Switch switchMode;
     private VerticalSeekBar seekBarTemp;
+    private TextView textViewOutTemp;
+    private TextView textViewInTemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,9 @@ public class MainActivity extends Activity {
         seekBarTemp = (VerticalSeekBar) findViewById(R.id.seekBarTemp);
         switchMode = (Switch) findViewById(R.id.switchMode);
         switchMode.setOnCheckedChangeListener(onCheckedChangeListenerSwitchMode);
+        textViewOutTemp = (TextView) findViewById(R.id.textViewOutTemp);
+        textViewInTemp = (TextView) findViewById(R.id.textViewInTemp);
+
 
         /*
          * Задачи
@@ -72,7 +78,9 @@ public class MainActivity extends Activity {
 
         if (bluetooth != null) {
             if (bluetooth.isEnabled()) {
-                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(BluetoothDevice.ACTION_FOUND);
+                filter.addAction(Constants.SMART_WEAR_MESSAGE);
                 registerReceiver(receiver, filter);
                 searchDeviceTask.execute();
             } else {
@@ -111,12 +119,20 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            // Когда найдено новое устройство
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                // Когда найдено новое устройство
                 // Получаем объект BluetoothDevice из интента
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
                 arrayAdapter.add(device.getName() + "\n" + device.getAddress());
+            } else if (Constants.SMART_WEAR_MESSAGE.equals(action)) {
+                // Пришло сообщение от устройства
+                if (intent.hasExtra(Constants.INSIDE_TEMP)) {
+                    textViewInTemp.setText(intent.getStringExtra(Constants.INSIDE_TEMP));
+                }
+                if (intent.hasExtra(Constants.OUTSIDE_TEMP)) {
+                    textViewOutTemp.setText(intent.getStringExtra(Constants.OUTSIDE_TEMP));
+                }
             }
         }
     };

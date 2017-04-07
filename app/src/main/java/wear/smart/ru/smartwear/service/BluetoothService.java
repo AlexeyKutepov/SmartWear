@@ -7,8 +7,14 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 import wear.smart.ru.smartwear.common.Constants;
 
@@ -22,6 +28,8 @@ public class BluetoothService extends Service {
     private BluetoothAdapter bluetooth;
     private BluetoothSocket socket;
     private BluetoothDevice device;
+    private Gson gson;
+    private ConnectedThread connectedThread;
 
     public BluetoothService() {
     }
@@ -29,6 +37,7 @@ public class BluetoothService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        gson = new Gson();
         bluetooth = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -86,6 +95,8 @@ public class BluetoothService extends Service {
                 e.printStackTrace();
             }
         }
+        connectedThread = new ConnectedThread();
+        connectedThread.start();
     }
 
     /**
@@ -98,8 +109,7 @@ public class BluetoothService extends Service {
             InputStream tmpIn = null;
             try {
                 tmpIn = socket.getInputStream();
-            } catch (IOException ignored) {
-            }
+            } catch (IOException ignored) {}
             inStream = tmpIn;
         }
 
@@ -110,9 +120,25 @@ public class BluetoothService extends Service {
             while (socket.isConnected()) {
                 try {
                     bytes = inStream.read(buffer);
-                } catch (IOException e) {
-                    break;
-                }
+                    if (bytes > 0) {
+                        String message = new String(buffer);
+//                        Для теста
+//                        String message = "{\"insideTemp\":\"36.6\", \"outsideTemp\":\"-20\"}";
+
+                        Map<Object, Object> resultMap;
+                        Type type = new TypeToken<Map<Object, Object>>() { }.getType();
+                        resultMap = gson.fromJson(message, type);
+
+                        Intent intent = new Intent(Constants.SMART_WEAR_MESSAGE);
+                        if (resultMap.containsKey(Constants.INSIDE_TEMP)) {
+                            intent.putExtra(Constants.INSIDE_TEMP, (String) resultMap.get(Constants.INSIDE_TEMP));
+                        }
+                        if (resultMap.containsKey(Constants.OUTSIDE_TEMP)) {
+                            intent.putExtra(Constants.OUTSIDE_TEMP, (String) resultMap.get(Constants.OUTSIDE_TEMP));
+                        }
+                        sendBroadcast(intent);
+                    }
+                } catch (Exception ignored) {}
             }
         }
     }
