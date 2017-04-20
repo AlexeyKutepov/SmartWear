@@ -162,6 +162,19 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
+
+                for(BluetoothGattService service : gatt.getServices()){
+                    for (BluetoothGattCharacteristic characteristicData : service.getCharacteristics()) {
+                        if (characteristicData.getUuid().equals(Constants.INSIDE_TEMP_UUID)) {
+                            for (BluetoothGattDescriptor descriptor : characteristicData.getDescriptors()) {
+                                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                gatt.writeDescriptor(descriptor);
+                            }
+                            gatt.setCharacteristicNotification(characteristicData, true);
+                        }
+                    }
+                }
+
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
@@ -203,30 +216,16 @@ public class BluetoothLeService extends Service {
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
-        if (Constants.MY_UUID.equals(characteristic.getUuid())) {
+        if (Constants.INSIDE_TEMP_UUID.equals(characteristic.getUuid())) {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
-//              final StringBuilder stringBuilder = new StringBuilder(data.length);
-//              for (byte byteChar : data)
-//                  stringBuilder.append(String.format("%02X ", byteChar));
-
                 String message = new String(data);
-//              Для теста
-//              String message = "{\"insideTemp\":\"36.6\", \"outsideTemp\":\"-20\"}";
-
-                Gson gson = new Gson();
-                Map<Object, Object> resultMap;
-                Type type = new TypeToken<Map<Object, Object>>() {
-                }.getType();
-                resultMap = gson.fromJson(message, type);
-                if (resultMap.containsKey(Constants.INSIDE_TEMP)) {
-                    intent.putExtra(Constants.INSIDE_TEMP, (String) resultMap.get(Constants.INSIDE_TEMP));
-                }
-                if (resultMap.containsKey(Constants.OUTSIDE_TEMP)) {
-                    intent.putExtra(Constants.OUTSIDE_TEMP, (String) resultMap.get(Constants.OUTSIDE_TEMP));
-                }
+                intent.putExtra(Constants.INSIDE_TEMP, message);
             }
         }
+//        if (resultMap.containsKey(Constants.OUTSIDE_TEMP)) {
+//                    intent.putExtra(Constants.OUTSIDE_TEMP, (String) resultMap.get(Constants.OUTSIDE_TEMP));
+//                }
         sendBroadcast(intent);
     }
 

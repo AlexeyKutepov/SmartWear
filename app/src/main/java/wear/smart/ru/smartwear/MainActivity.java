@@ -168,10 +168,6 @@ public class MainActivity extends Activity {
                     // Соединение разорвано
                     mConnected = false;
                     break;
-                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
-                    // Обнаружен сервис
-                    Log.d(TAG, "ACTION_GATT_SERVICES_DISCOVERED");
-                    break;
                 case BluetoothLeService.ACTION_DATA_AVAILABLE:
                     // Получены данные
                     // Пришло сообщение от устройства
@@ -216,7 +212,7 @@ public class MainActivity extends Activity {
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
