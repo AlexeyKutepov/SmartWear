@@ -23,9 +23,9 @@
         </activity>
 
         <service
-            android:name=".service.BluetoothService"
+            android:name=".service.BluetoothLeService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"></service>
     </application>
 
 </manifest>

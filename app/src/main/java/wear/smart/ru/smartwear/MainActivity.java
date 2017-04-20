@@ -6,27 +6,33 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import java.util.Arrays;
-
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.component.VerticalSeekBar;
-import wear.smart.ru.smartwear.service.BluetoothService;
+import wear.smart.ru.smartwear.service.BluetoothLeService;
 
 public class MainActivity extends Activity {
 
+    private final static String TAG = MainActivity.class.getSimpleName();
+
     private BluetoothAdapter bluetooth;
-    private Intent bluetoothService;
+    private String mDeviceAddress;
+    private BluetoothLeService mBluetoothLeService;
+    private boolean mConnected = false;
 
     private ProgressDialog progressDialog;
     private AlertDialog.Builder bluetoothNotSupportedBuilder;
@@ -41,10 +47,12 @@ public class MainActivity extends Activity {
     private TextView textViewOutTemp;
     private TextView textViewInTemp;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mDeviceAddress = null;
 
         /*
          * Диалоговые окна
@@ -73,15 +81,14 @@ public class MainActivity extends Activity {
         /*
          * bluetooth
          */
-        bluetoothService = new Intent(this, BluetoothService.class);
         bluetooth = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetooth != null) {
             if (bluetooth.isEnabled()) {
-                IntentFilter filter = new IntentFilter();
-                filter.addAction(BluetoothDevice.ACTION_FOUND);
-                filter.addAction(Constants.SMART_WEAR_MESSAGE);
-                registerReceiver(receiver, filter);
+                Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+                bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+                registerReceiver(receiver, makeIntentFilter());
                 searchDeviceTask.execute();
             } else {
                 // Bluetooth выключен. Предложим пользователю включить его.
@@ -97,45 +104,122 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, makeIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
         unregisterReceiver(receiver);
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+    }
+
+    /**
+     * Обработка событий
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-            registerReceiver(receiver, filter);
+        if (resultCode == RESULT_OK) { // Пользователь включил bluetooth
+            Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
+            bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+            registerReceiver(receiver, makeIntentFilter());
             searchDeviceTask.execute();
         }
     }
 
     /**
-     * Поиск bluetooth-устройств
+     * Обработка входящих сообщений
      */
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Когда найдено новое устройство
-                // Получаем объект BluetoothDevice из интента
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
-                arrayAdapter.add(device.getName() + "\n" + device.getAddress());
-            } else if (Constants.SMART_WEAR_MESSAGE.equals(action)) {
-                // Пришло сообщение от устройства
-                if (intent.hasExtra(Constants.INSIDE_TEMP)) {
-                    textViewInTemp.setText(intent.getStringExtra(Constants.INSIDE_TEMP));
-                }
-                if (intent.hasExtra(Constants.OUTSIDE_TEMP)) {
-                    textViewOutTemp.setText(intent.getStringExtra(Constants.OUTSIDE_TEMP));
-                }
+            switch (action) {
+                case BluetoothDevice.ACTION_FOUND:
+                    // Когда найдено новое устройство
+                    // Получаем объект BluetoothDevice из интента
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
+                    arrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                    break;
+                case BluetoothLeService.ACTION_GATT_CONNECTED:
+                    // Соединение установлено
+                    mConnected = true;
+                    break;
+                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
+                    // Соединение разорвано
+                    mConnected = false;
+                    break;
+                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
+                    // Обнаружен сервис
+                    Log.d(TAG, "ACTION_GATT_SERVICES_DISCOVERED");
+                    break;
+                case BluetoothLeService.ACTION_DATA_AVAILABLE:
+                    // Получены данные
+                    // Пришло сообщение от устройства
+                    if (intent.hasExtra(Constants.INSIDE_TEMP)) {
+                        textViewInTemp.setText(intent.getStringExtra(Constants.INSIDE_TEMP));
+                    }
+                    if (intent.hasExtra(Constants.OUTSIDE_TEMP)) {
+                        textViewOutTemp.setText(intent.getStringExtra(Constants.OUTSIDE_TEMP));
+                    }
+                    break;
             }
         }
     };
+
+    /**
+     * Управление соединениями
+     */
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if (!mBluetoothLeService.initialize()) {
+                Log.e(TAG, "Unable to initialize Bluetooth");
+                finish();
+            }
+            mBluetoothLeService.connect(mDeviceAddress);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            mBluetoothLeService = null;
+        }
+    };
+
+    /**
+     * Фильтр событий
+     * @return
+     */
+    private static IntentFilter makeIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
 
     /**
      * В зависимости от состояния переключателя руч/авто делаем доступными или недоступными элементы управления контроллером
@@ -199,13 +283,14 @@ public class MainActivity extends Activity {
                 devicesListBuilder.setTitle(R.string.search_devices_result_dialog_title)
                         .setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                stopService(bluetoothService);
                                 String item = arrayAdapter.getItem(which);
                                 if (item != null) {
-                                    String address = item.split("\n")[1];
                                     bluetooth.cancelDiscovery();
-                                    bluetoothService.putExtra(Constants.MAC, address);
-                                    startService(bluetoothService);
+                                    mDeviceAddress = item.split("\n")[1];
+                                    if (mBluetoothLeService != null) {
+                                        final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+                                        Log.d(TAG, "Connect request result=" + result);
+                                    }
                                 }
                             }
                         })

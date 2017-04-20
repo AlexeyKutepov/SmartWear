@@ -18,13 +18,12 @@ public class Constants {
 
     public final static int REQUEST_ENABLE_BT = 1;
 
-    public static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    public static final UUID MY_UUID = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
     public static final String MAC = "MAC";
 
     /**
      * Сообщение от умной одежды
      */
-    public static final String SMART_WEAR_MESSAGE = "wear.smart.ru.smartwear.SMART_WEAR_MESSAGE";
     public static final String INSIDE_TEMP = "insideTemp";
     public static final String OUTSIDE_TEMP = "outsideTemp";
 
