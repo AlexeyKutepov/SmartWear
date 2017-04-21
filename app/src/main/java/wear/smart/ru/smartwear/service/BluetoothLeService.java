@@ -16,12 +16,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import wear.smart.ru.smartwear.common.Constants;
@@ -162,16 +157,15 @@ public class BluetoothLeService extends Service {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-
-                for(BluetoothGattService service : gatt.getServices()){
-                    for (BluetoothGattCharacteristic characteristicData : service.getCharacteristics()) {
-                        if (characteristicData.getUuid().equals(Constants.INSIDE_TEMP_UUID)) {
-                            for (BluetoothGattDescriptor descriptor : characteristicData.getDescriptors()) {
-                                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                                gatt.writeDescriptor(descriptor);
-                            }
-                            gatt.setCharacteristicNotification(characteristicData, true);
-                        }
+                BluetoothGattService service = gatt.getService(Constants.TEMP_SERVICE_UUID);
+                if (service != null) {
+                    BluetoothGattCharacteristic characteristicInsideTemp = service.getCharacteristic(Constants.INSIDE_TEMP_UUID);
+                    if (characteristicInsideTemp != null) {
+                        setCharacteristicNotification(characteristicInsideTemp, true);
+                    }
+                    BluetoothGattCharacteristic characteristicOutsideTemp = service.getCharacteristic(Constants.OUTSIDE_TEMP_UUID);
+                    if (characteristicOutsideTemp != null) {
+                        setCharacteristicNotification(characteristicOutsideTemp, true);
                     }
                 }
 
@@ -222,10 +216,13 @@ public class BluetoothLeService extends Service {
                 String message = new String(data);
                 intent.putExtra(Constants.INSIDE_TEMP, message);
             }
+        } else if (Constants.OUTSIDE_TEMP_UUID.equals(characteristic.getUuid())) {
+            final byte[] data = characteristic.getValue();
+            if (data != null && data.length > 0) {
+                String message = new String(data);
+                intent.putExtra(Constants.OUTSIDE_TEMP, message);
+            }
         }
-//        if (resultMap.containsKey(Constants.OUTSIDE_TEMP)) {
-//                    intent.putExtra(Constants.OUTSIDE_TEMP, (String) resultMap.get(Constants.OUTSIDE_TEMP));
-//                }
         sendBroadcast(intent);
     }
 
@@ -247,18 +244,23 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * Request a read on a given {@code BluetoothGattCharacteristic}. The read result is reported
-     * asynchronously through the {@code BluetoothGattCallback#onCharacteristicRead(android.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
-     * callback.
-     *
-     * @param characteristic The characteristic to read from.
+     * Задать значение характеристики
+     * @param characteristicUUID уникальный UUID характеристики
+     * @param value значение
+     * @return результат выполнения операции
      */
-    public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
-            return;
+    public boolean setCharacteristicValueByUUID(UUID characteristicUUID, String value) {
+        if (mBluetoothGatt != null) {
+                BluetoothGattService service = mBluetoothGatt.getService(Constants.TEMP_SERVICE_UUID);
+                if (service != null) {
+                    BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
+                    if (characteristic != null) {
+                        characteristic.setValue(value);
+                        return true;
+                    }
+                }
         }
-        mBluetoothGatt.readCharacteristic(characteristic);
+        return false;
     }
 
     /**
@@ -275,11 +277,12 @@ public class BluetoothLeService extends Service {
         }
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
 
-        if (Constants.MY_UUID.equals(characteristic.getUuid())) {
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                    UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
+        if (enabled) {
+            // TODO наверное нужно захардкодить UUID-ы дескрипторов
+            for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                mBluetoothGatt.writeDescriptor(descriptor);
+            }
         }
     }
 

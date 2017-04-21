@@ -224,8 +224,10 @@ public class MainActivity extends Activity {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
+                mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "0");
                 seekBarTemp.setEnabled(false);
             } else {
+                mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "1");
                 seekBarTemp.setEnabled(true);
             }
         }

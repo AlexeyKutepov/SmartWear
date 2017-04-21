@@ -19,7 +19,11 @@ public class Constants {
     public final static int REQUEST_ENABLE_BT = 1;
 
     public static final UUID MY_UUID = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
-    public static final UUID INSIDE_TEMP_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e");
+    public static final UUID TEMP_SERVICE_UUID = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dcca9e"); // Сервис
+    public static final UUID INSIDE_TEMP_UUID = UUID.fromString("6e400002-b5a3-f393-e0a9-e50e24dcca9e"); // Температура одежды
+    public static final UUID OUTSIDE_TEMP_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e"); // Температура на улице
+    public static final UUID MODE_UUID = UUID.fromString("6e400004-b5a3-f393-e0a9-e50e24dcca9e"); // Авто - 0/Руч - 1
+    public static final UUID INPUT_TEMP_UUID = UUID.fromString("6e400005-b5a3-f393-e0a9-e50e24dcca9e"); // Температура, задаваемая на телефоне
 
     /**
      * Сообщение от умной одежды
