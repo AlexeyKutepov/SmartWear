@@ -207,14 +207,13 @@ public class MainActivity extends Activity {
 
     /**
      * Фильтр событий
-     * @return
+     * @return {@link IntentFilter}
      */
     private static IntentFilter makeIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
@@ -231,12 +230,12 @@ public class MainActivity extends Activity {
 
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
-
+            // Пока эти события нам не нужны
         }
 
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
-
+            // Пока эти события нам не нужны
         }
     };
 

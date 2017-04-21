@@ -16,7 +16,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import java.util.List;
 import java.util.UUID;
 
 import wear.smart.ru.smartwear.common.Constants;
@@ -109,7 +108,7 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * Закрыть соединение
+     * Отключиться
      */
     public void disconnect() {
         if (mBluetoothAdapter == null || mBluetoothGatt == null) {
@@ -120,8 +119,7 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * After using a given BLE device, the app must call this method to ensure resources are
-     * released properly.
+     * Закрыть соединение
      */
     public void close() {
         if (mBluetoothGatt == null) {
@@ -264,10 +262,9 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * Enables or disables notification on a give characteristic.
-     *
-     * @param characteristic Characteristic to act on.
-     * @param enabled        If true, enable notification.  False otherwise.
+     * Сделать доступными/недоступными оповещения у характеристик
+     * @param characteristic характеристика
+     * @param enabled запретить/разрешить оповещение
      */
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
@@ -284,17 +281,5 @@ public class BluetoothLeService extends Service {
                 mBluetoothGatt.writeDescriptor(descriptor);
             }
         }
-    }
-
-    /**
-     * Retrieves a list of supported GATT services on the connected device. This should be
-     * invoked only after {@code BluetoothGatt#discoverServices()} completes successfully.
-     *
-     * @return A {@code List} of supported services.
-     */
-    public List<BluetoothGattService> getSupportedGattServices() {
-        if (mBluetoothGatt == null) return null;
-
-        return mBluetoothGatt.getServices();
     }
 }
