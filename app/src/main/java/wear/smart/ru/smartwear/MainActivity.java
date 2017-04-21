@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -67,6 +68,7 @@ public class MainActivity extends Activity {
          */
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         seekBarTemp = (VerticalSeekBar) findViewById(R.id.seekBarTemp);
+        seekBarTemp.setOnSeekBarChangeListener(onSeekBarChangeListener);
         switchMode = (Switch) findViewById(R.id.switchMode);
         switchMode.setOnCheckedChangeListener(onCheckedChangeListenerSwitchMode);
         textViewOutTemp = (TextView) findViewById(R.id.textViewOutTemp);
@@ -216,6 +218,27 @@ public class MainActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
+
+    /**
+     * Изменение температуры вручную (от -20 до +42 градусов)
+     */
+    VerticalSeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new VerticalSeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            double temp = -20 + 0.62 * progress;
+            mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, String.valueOf(temp));
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+        }
+    };
 
     /**
      * В зависимости от состояния переключателя руч/авто делаем доступными или недоступными элементы управления контроллером
