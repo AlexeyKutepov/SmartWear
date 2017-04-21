@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     private AlertDialog.Builder bluetoothNotSupportedBuilder;
     private AlertDialog.Builder devicesNotFoundBuilder;
     private AlertDialog.Builder devicesListBuilder;
+    private AlertDialog.Builder connectErrorBuilder;
 
     private SearchDeviceTask searchDeviceTask;
 
@@ -159,6 +160,15 @@ public class MainActivity extends Activity {
                     // Когда найдено новое устройство
                     // Получаем объект BluetoothDevice из интента
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    // Чтоб небыло дубликатов
+                    for(int i=0; i<arrayAdapter.getCount(); i++){
+                        String item = arrayAdapter.getItem(i);
+                        if (item != null) {
+                            if (item.equals(device.getName() + "\n" + device.getAddress())) {
+                                break;
+                            }
+                        }
+                    }
                     //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
                     arrayAdapter.add(device.getName() + "\n" + device.getAddress());
                     break;
@@ -267,6 +277,7 @@ public class MainActivity extends Activity {
             bluetooth.startDiscovery();
             progressDialog.setTitle(R.string.search_devices_dialog_title);
             progressDialog.setMessage(getResources().getString(R.string.search_devices_dialog_message));
+            progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
         }
 
@@ -283,7 +294,8 @@ public class MainActivity extends Activity {
             super.onPostExecute(aVoid);
             progressDialog.dismiss();
             if (arrayAdapter.isEmpty()) {
-                devicesNotFoundBuilder.setMessage(R.string.devices_not_found_dialog_message)
+                devicesNotFoundBuilder
+                        .setMessage(R.string.devices_not_found_dialog_message)
                         .setTitle(R.string.devices_not_found_dialog_title)
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
@@ -298,6 +310,7 @@ public class MainActivity extends Activity {
                             }
                         });
                 AlertDialog dialog = devicesNotFoundBuilder.create();
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             } else {
                 devicesListBuilder.setTitle(R.string.search_devices_result_dialog_title)
@@ -310,6 +323,21 @@ public class MainActivity extends Activity {
                                     if (mBluetoothLeService != null) {
                                         final boolean result = mBluetoothLeService.connect(mDeviceAddress);
                                         Log.d(TAG, "Connect request result=" + result);
+                                        if (!result) {
+                                            connectErrorBuilder
+                                                    .setTitle(R.string.connect_error_dialog_title)
+                                                    .setMessage(R.string.connect_error_dialog_message)
+                                                    .setPositiveButton(R.string.select_another_device, new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                        }
+                                                    })
+                                                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(DialogInterface dialog, int which) {
+                                                        }
+                                                    });
+                                        }
                                     }
                                 }
                             }
@@ -327,6 +355,7 @@ public class MainActivity extends Activity {
                             }
                         });
                 AlertDialog dialog = devicesListBuilder.create();
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             }
         }

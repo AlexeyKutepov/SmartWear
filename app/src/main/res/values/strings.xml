@@ -7,6 +7,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Отмена</string>
     <string name="repeat_search">Повторить поиск</string>
+    <string name="select_another_device">Выбрать другое устройство</string>
 
     <!-- Сообщения в диалоговых окнах-->
     <string name="bluetooth_is_not_supported_dialog_message">Ваше устройство не поддерживает bluetooth</string>
@@ -16,4 +17,6 @@
     <string name="devices_not_found_dialog_message">Устройства не найдены. Повторить поиск?</string>
     <string name="devices_not_found_dialog_title">Результаты поиска</string>
     <string name="search_devices_result_dialog_title">Выберите устройство</string>
+    <string name="connect_error_dialog_title">Ошибка подключения</string>
+    <string name="connect_error_dialog_message">Невозможно подключиться к выбранному устройству</string>
 </resources>
