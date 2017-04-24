@@ -229,6 +229,9 @@ public class MainActivity extends Activity {
                     if (intent.hasExtra(Constants.OUTSIDE_TEMP)) {
                         textViewOutTemp.setText(intent.getStringExtra(Constants.OUTSIDE_TEMP));
                     }
+                    if (intent.hasExtra(Constants.BATTERY)) {
+                        Double battery = intent.getDoubleExtra(Constants.BATTERY, 100);
+                    }
                     break;
             }
         }

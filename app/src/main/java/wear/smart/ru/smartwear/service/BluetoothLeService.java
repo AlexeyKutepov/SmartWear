@@ -165,9 +165,11 @@ public class BluetoothLeService extends Service {
                     if (characteristicOutsideTemp != null) {
                         setCharacteristicNotification(characteristicOutsideTemp, true);
                     }
+                    BluetoothGattCharacteristic characteristicOutsideBattery = service.getCharacteristic(Constants.BATTERY_UUID);
+                    if (characteristicOutsideBattery != null) {
+                        setCharacteristicNotification(characteristicOutsideBattery, true);
+                    }
                 }
-
-                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
@@ -219,6 +221,12 @@ public class BluetoothLeService extends Service {
             if (data != null && data.length > 0) {
                 String message = new String(data);
                 intent.putExtra(Constants.OUTSIDE_TEMP, message);
+            }
+        } else if (Constants.BATTERY_UUID.equals(characteristic.getUuid())) {
+            final byte[] data = characteristic.getValue();
+            if (data != null && data.length > 0) {
+                String message = new String(data);
+                intent.putExtra(Constants.BATTERY, Double.valueOf(message));
             }
         }
         sendBroadcast(intent);
