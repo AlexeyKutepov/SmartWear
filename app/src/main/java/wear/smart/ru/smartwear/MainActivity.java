@@ -21,6 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.component.VerticalSeekBar;
@@ -48,6 +49,10 @@ public class MainActivity extends Activity {
     private VerticalSeekBar seekBarTemp;
     private TextView textViewOutTemp;
     private TextView textViewInTemp;
+    private ToggleButton buttonHat;
+    private ToggleButton buttonJacket;
+    private ToggleButton buttonMitten;
+    private ToggleButton buttonBotte;
 
 
     @Override
@@ -74,6 +79,10 @@ public class MainActivity extends Activity {
         switchMode.setOnCheckedChangeListener(onCheckedChangeListenerSwitchMode);
         textViewOutTemp = (TextView) findViewById(R.id.textViewOutTemp);
         textViewInTemp = (TextView) findViewById(R.id.textViewInTemp);
+        buttonHat = (ToggleButton) findViewById(R.id.buttonHat);
+        buttonJacket = (ToggleButton) findViewById(R.id.buttonJacket);
+        buttonMitten = (ToggleButton) findViewById(R.id.buttonMitten);
+        buttonBotte = (ToggleButton) findViewById(R.id.buttonBotte);
 
 
         /*
@@ -257,9 +266,17 @@ public class MainActivity extends Activity {
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
                 mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "0");
+                buttonHat.setEnabled(false);
+                buttonJacket.setEnabled(false);
+                buttonMitten.setEnabled(false);
+                buttonBotte.setEnabled(false);
                 seekBarTemp.setEnabled(false);
             } else {
                 mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "1");
+                buttonHat.setEnabled(true);
+                buttonJacket.setEnabled(true);
+                buttonMitten.setEnabled(true);
+                buttonBotte.setEnabled(true);
                 seekBarTemp.setEnabled(true);
             }
         }
