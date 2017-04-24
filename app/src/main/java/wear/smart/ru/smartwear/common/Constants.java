@@ -24,6 +24,10 @@ public class Constants {
     public static final UUID OUTSIDE_TEMP_UUID = UUID.fromString("6e400003-b5a3-f393-e0a9-e50e24dcca9e"); // Температура на улице
     public static final UUID MODE_UUID = UUID.fromString("6e400004-b5a3-f393-e0a9-e50e24dcca9e"); // Авто - 0/Руч - 1
     public static final UUID INPUT_TEMP_UUID = UUID.fromString("6e400005-b5a3-f393-e0a9-e50e24dcca9e"); // Температура, задаваемая на телефоне
+    public static final UUID MODE_HAT_UUID = UUID.fromString("6e400006-b5a3-f393-e0a9-e50e24dcca9e"); // Шапка
+    public static final UUID MODE_JACKET_UUID = UUID.fromString("6e400006-b5a3-f393-e0a9-e50e24dcca9e"); // Куртка
+    public static final UUID MODE_MITTEN_UUID = UUID.fromString("6e400006-b5a3-f393-e0a9-e50e24dcca9e"); // Варежки
+    public static final UUID MODE_BOOTS_UUID = UUID.fromString("6e400006-b5a3-f393-e0a9-e50e24dcca9e"); // Варежки
 
     /**
      * Сообщение от умной одежды

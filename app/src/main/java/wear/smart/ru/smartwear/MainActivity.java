@@ -51,8 +51,8 @@ public class MainActivity extends Activity {
     private TextView textViewInTemp;
     private ToggleButton buttonHat;
     private ToggleButton buttonJacket;
-    private ToggleButton buttonMitten;
-    private ToggleButton buttonBotte;
+    private ToggleButton buttonMittens;
+    private ToggleButton buttonBoots;
 
 
     @Override
@@ -81,8 +81,8 @@ public class MainActivity extends Activity {
         textViewInTemp = (TextView) findViewById(R.id.textViewInTemp);
         buttonHat = (ToggleButton) findViewById(R.id.buttonHat);
         buttonJacket = (ToggleButton) findViewById(R.id.buttonJacket);
-        buttonMitten = (ToggleButton) findViewById(R.id.buttonMitten);
-        buttonBotte = (ToggleButton) findViewById(R.id.buttonBotte);
+        buttonMittens = (ToggleButton) findViewById(R.id.buttonMittens);
+        buttonBoots = (ToggleButton) findViewById(R.id.buttonBoots);
 
 
         /*
@@ -268,15 +268,15 @@ public class MainActivity extends Activity {
                 mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "0");
                 buttonHat.setEnabled(false);
                 buttonJacket.setEnabled(false);
-                buttonMitten.setEnabled(false);
-                buttonBotte.setEnabled(false);
+                buttonMittens.setEnabled(false);
+                buttonBoots.setEnabled(false);
                 seekBarTemp.setEnabled(false);
             } else {
                 mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "1");
                 buttonHat.setEnabled(true);
                 buttonJacket.setEnabled(true);
-                buttonMitten.setEnabled(true);
-                buttonBotte.setEnabled(true);
+                buttonMittens.setEnabled(true);
+                buttonBoots.setEnabled(true);
                 seekBarTemp.setEnabled(true);
             }
         }
