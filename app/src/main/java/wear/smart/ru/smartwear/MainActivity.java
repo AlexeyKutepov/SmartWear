@@ -80,10 +80,13 @@ public class MainActivity extends Activity {
         textViewOutTemp = (TextView) findViewById(R.id.textViewOutTemp);
         textViewInTemp = (TextView) findViewById(R.id.textViewInTemp);
         buttonHat = (ToggleButton) findViewById(R.id.buttonHat);
+        buttonHat.setOnCheckedChangeListener(onButtonHatCheckedChangeListener);
         buttonJacket = (ToggleButton) findViewById(R.id.buttonJacket);
+        buttonJacket.setOnCheckedChangeListener(onButtonJacketCheckedChangeListener);
         buttonMittens = (ToggleButton) findViewById(R.id.buttonMittens);
+        buttonMittens.setOnCheckedChangeListener(onButtonMittensCheckedChangeListener);
         buttonBoots = (ToggleButton) findViewById(R.id.buttonBoots);
-
+        buttonBoots.setOnCheckedChangeListener(onButtonBootsCheckedChangeListener);
 
         /*
          * Задачи
@@ -243,8 +246,10 @@ public class MainActivity extends Activity {
     VerticalSeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new VerticalSeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            double temp = -20 + 0.62 * progress;
-            mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, String.valueOf(temp));
+            if (mBluetoothLeService != null) {
+                double temp = -20 + 0.62 * progress;
+                mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, String.valueOf(temp));
+            }
         }
 
         @Override
@@ -259,20 +264,92 @@ public class MainActivity extends Activity {
     };
 
     /**
+     * Обработка нажатия кнопки с иконкой шапки
+     */
+    ToggleButton.OnCheckedChangeListener onButtonHatCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (mBluetoothLeService != null) {
+                if (isChecked) {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_HAT_UUID, "1");
+                } else {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_HAT_UUID, "0");
+                }
+            }
+        }
+    };
+
+    /**
+     * Обработка нажатия кнопки с иконкой куртки
+     */
+    ToggleButton.OnCheckedChangeListener onButtonJacketCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (mBluetoothLeService != null) {
+                if (isChecked) {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_JACKET_UUID, "1");
+                } else {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_JACKET_UUID, "0");
+                }
+            }
+        }
+    };
+
+    /**
+     * Обработка нажатия кнопки с иконкой рукавиц
+     */
+    ToggleButton.OnCheckedChangeListener onButtonMittensCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (mBluetoothLeService != null) {
+                if (isChecked) {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_MITTENS_UUID, "1");
+                } else {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_MITTENS_UUID, "0");
+                }
+            }
+        }
+    };
+
+    /**
+     * Обработка нажатия кнопки с иконкой ботинок
+     */
+    ToggleButton.OnCheckedChangeListener onButtonBootsCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
+
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            if (mBluetoothLeService != null) {
+                if (isChecked) {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_BOOTS_UUID, "1");
+                } else {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_BOOTS_UUID, "0");
+                }
+            }
+        }
+    };
+
+    /**
      * В зависимости от состояния переключателя руч/авто делаем доступными или недоступными элементы управления контроллером
      */
     CompoundButton.OnCheckedChangeListener onCheckedChangeListenerSwitchMode = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
-                mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "0");
+                if (mBluetoothLeService != null) {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "0");
+                }
                 buttonHat.setEnabled(false);
                 buttonJacket.setEnabled(false);
                 buttonMittens.setEnabled(false);
                 buttonBoots.setEnabled(false);
                 seekBarTemp.setEnabled(false);
             } else {
-                mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "1");
+                if (mBluetoothLeService != null) {
+                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "1");
+                }
                 buttonHat.setEnabled(true);
                 buttonJacket.setEnabled(true);
                 buttonMittens.setEnabled(true);
