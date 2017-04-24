@@ -68,6 +68,7 @@ public class MainActivity extends Activity {
         devicesNotFoundBuilder = new AlertDialog.Builder(this);
         devicesListBuilder = new AlertDialog.Builder(this);
         bluetoothNotSupportedBuilder = new AlertDialog.Builder(this);
+        connectErrorBuilder = new AlertDialog.Builder(this);
 
         /*
          * Интерфейс
@@ -112,8 +113,15 @@ public class MainActivity extends Activity {
             }
         } else {
             bluetoothNotSupportedBuilder.setMessage(R.string.bluetooth_is_not_supported_dialog_message)
-                    .setTitle(R.string.bluetooth_is_not_supported_dialog_title);
+                    .setTitle(R.string.bluetooth_is_not_supported_dialog_title)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishAndRemoveTask();
+                        }
+                    });
             AlertDialog dialog = bluetoothNotSupportedBuilder.create();
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
     }
@@ -144,6 +152,7 @@ public class MainActivity extends Activity {
 
     /**
      * Обработка событий
+     *
      * @param requestCode
      * @param resultCode
      * @param data
@@ -173,7 +182,7 @@ public class MainActivity extends Activity {
                     // Получаем объект BluetoothDevice из интента
                     BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     // Чтоб небыло дубликатов
-                    for(int i=0; i<arrayAdapter.getCount(); i++){
+                    for (int i = 0; i < arrayAdapter.getCount(); i++) {
                         String item = arrayAdapter.getItem(i);
                         if (item != null) {
                             if (item.equals(device.getName() + "\n" + device.getAddress())) {
@@ -191,6 +200,25 @@ public class MainActivity extends Activity {
                 case BluetoothLeService.ACTION_GATT_DISCONNECTED:
                     // Соединение разорвано
                     mConnected = false;
+                    connectErrorBuilder
+                            .setTitle(R.string.connect_error_dialog_title)
+                            .setMessage(R.string.connect_error_dialog_message)
+                            .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    searchDeviceTask = new SearchDeviceTask();
+                                    searchDeviceTask.execute();
+                                }
+                            })
+                            .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    finishAndRemoveTask();
+                                }
+                            });
+                    AlertDialog dialog = connectErrorBuilder.create();
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.show();
                     break;
                 case BluetoothLeService.ACTION_DATA_AVAILABLE:
                     // Получены данные
@@ -229,6 +257,7 @@ public class MainActivity extends Activity {
 
     /**
      * Фильтр событий
+     *
      * @return {@link IntentFilter}
      */
     private static IntentFilter makeIntentFilter() {
@@ -391,9 +420,10 @@ public class MainActivity extends Activity {
                 devicesNotFoundBuilder
                         .setMessage(R.string.devices_not_found_dialog_message)
                         .setTitle(R.string.devices_not_found_dialog_title)
-                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                finishAndRemoveTask();
                             }
                         })
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
@@ -417,21 +447,6 @@ public class MainActivity extends Activity {
                                     if (mBluetoothLeService != null) {
                                         final boolean result = mBluetoothLeService.connect(mDeviceAddress);
                                         Log.d(TAG, "Connect request result=" + result);
-                                        if (!result) {
-                                            connectErrorBuilder
-                                                    .setTitle(R.string.connect_error_dialog_title)
-                                                    .setMessage(R.string.connect_error_dialog_message)
-                                                    .setPositiveButton(R.string.select_another_device, new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialog, int which) {
-                                                        }
-                                                    })
-                                                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(DialogInterface dialog, int which) {
-                                                        }
-                                                    });
-                                        }
                                     }
                                 }
                             }
@@ -443,9 +458,10 @@ public class MainActivity extends Activity {
                                 searchDeviceTask.execute();
                             }
                         })
-                        .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                finishAndRemoveTask();
                             }
                         });
                 AlertDialog dialog = devicesListBuilder.create();
