@@ -16,6 +16,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
 import wear.smart.ru.smartwear.common.Constants;
@@ -213,19 +215,21 @@ public class BluetoothLeService extends Service {
         if (Constants.INSIDE_TEMP_UUID.equals(characteristic.getUuid())) {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
-                String message = new String(data);
-                intent.putExtra(Constants.INSIDE_TEMP, message);
+                String message = new String(data).trim();
+                Double result = new BigDecimal(message).setScale(1, RoundingMode.UP).doubleValue();
+                intent.putExtra(Constants.INSIDE_TEMP, result.toString());
             }
         } else if (Constants.OUTSIDE_TEMP_UUID.equals(characteristic.getUuid())) {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
-                String message = new String(data);
-                intent.putExtra(Constants.OUTSIDE_TEMP, message);
+                String message = new String(data).trim();
+                Double result = new BigDecimal(message).setScale(1, RoundingMode.UP).doubleValue();
+                intent.putExtra(Constants.OUTSIDE_TEMP, result.toString());
             }
         } else if (Constants.BATTERY_UUID.equals(characteristic.getUuid())) {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
-                String message = new String(data);
+                String message = new String(data).trim();
                 intent.putExtra(Constants.BATTERY, Double.valueOf(message));
             }
         }
