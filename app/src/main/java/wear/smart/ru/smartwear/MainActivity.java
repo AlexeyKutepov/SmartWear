@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -53,6 +54,8 @@ public class MainActivity extends Activity {
     private ToggleButton buttonJacket;
     private ToggleButton buttonMittens;
     private ToggleButton buttonBoots;
+    private ImageView imageViewBattery;
+    private ImageView imageViewBluetooth;
 
 
     @Override
@@ -88,6 +91,8 @@ public class MainActivity extends Activity {
         buttonMittens.setOnCheckedChangeListener(onButtonMittensCheckedChangeListener);
         buttonBoots = (ToggleButton) findViewById(R.id.buttonBoots);
         buttonBoots.setOnCheckedChangeListener(onButtonBootsCheckedChangeListener);
+        imageViewBattery = (ImageView) findViewById(R.id.imageViewBattery);
+        imageViewBluetooth = (ImageView) findViewById(R.id.imageViewBluetooth);
 
         /*
          * Задачи
@@ -196,10 +201,12 @@ public class MainActivity extends Activity {
                 case BluetoothLeService.ACTION_GATT_CONNECTED:
                     // Соединение установлено
                     mConnected = true;
+                    imageViewBluetooth.setImageResource(R.drawable.bluetooth_on);
                     break;
                 case BluetoothLeService.ACTION_GATT_DISCONNECTED:
                     // Соединение разорвано
                     mConnected = false;
+                    imageViewBluetooth.setImageResource(R.drawable.bluetooth_off);
                     connectErrorBuilder
                             .setTitle(R.string.connect_error_dialog_title)
                             .setMessage(R.string.connect_error_dialog_message)
@@ -230,7 +237,20 @@ public class MainActivity extends Activity {
                         textViewOutTemp.setText(intent.getStringExtra(Constants.OUTSIDE_TEMP));
                     }
                     if (intent.hasExtra(Constants.BATTERY)) {
-                        Double battery = intent.getDoubleExtra(Constants.BATTERY, 100);
+                        Double battery = intent.getDoubleExtra(Constants.BATTERY, -1);
+                        if (battery < 0) {
+                            imageViewBattery.setImageResource(R.drawable.battery_disabled);
+                        } else if (battery <= 5){
+                            imageViewBluetooth.setImageResource(R.drawable.battery_1);
+                        } else if (battery <= 25) {
+                            imageViewBluetooth.setImageResource(R.drawable.battery_2);
+                        } else if (battery <= 50) {
+                            imageViewBluetooth.setImageResource(R.drawable.battery_3);
+                        } else if (battery <= 75) {
+                            imageViewBluetooth.setImageResource(R.drawable.battery_4);
+                        } else if (battery <= 100) {
+                            imageViewBluetooth.setImageResource(R.drawable.battery_5);
+                        }
                     }
                     break;
             }
