@@ -214,8 +214,10 @@ public class MainActivity extends Activity {
                             .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    searchDeviceTask = new SearchDeviceTask();
-                                    searchDeviceTask.execute();
+                                    if (!mConnected) {
+                                        searchDeviceTask = new SearchDeviceTask();
+                                        searchDeviceTask.execute();
+                                    }
                                 }
                             })
                             .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
