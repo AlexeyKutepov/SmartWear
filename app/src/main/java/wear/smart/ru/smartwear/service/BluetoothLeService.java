@@ -167,9 +167,9 @@ public class BluetoothLeService extends Service {
                     if (characteristicOutsideTemp != null) {
                         setCharacteristicNotification(characteristicOutsideTemp, true);
                     }
-                    BluetoothGattCharacteristic characteristicOutsideBattery = service.getCharacteristic(Constants.BATTERY_UUID);
-                    if (characteristicOutsideBattery != null) {
-                        setCharacteristicNotification(characteristicOutsideBattery, true);
+                    BluetoothGattCharacteristic characteristicBattery = service.getCharacteristic(Constants.BATTERY_UUID);
+                    if (characteristicBattery != null) {
+                        setCharacteristicNotification(characteristicBattery, true);
                     }
                 }
             } else {
