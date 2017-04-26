@@ -207,6 +207,7 @@ public class MainActivity extends Activity {
                     // Соединение разорвано
                     mConnected = false;
                     imageViewBluetooth.setImageResource(R.drawable.bluetooth_off);
+                    imageViewBattery.setImageResource(R.drawable.battery_disabled);
                     connectErrorBuilder
                             .setTitle(R.string.connect_error_dialog_title)
                             .setMessage(R.string.connect_error_dialog_message)
