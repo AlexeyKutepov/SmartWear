@@ -19,6 +19,7 @@ import android.util.Log;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
+import java.util.concurrent.Semaphore;
 
 import wear.smart.ru.smartwear.common.Constants;
 
@@ -32,6 +33,7 @@ public class BluetoothLeService extends Service {
     private String mBluetoothDeviceAddress;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
+    private Semaphore bleSemaphore = new Semaphore(1);
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -191,6 +193,12 @@ public class BluetoothLeService extends Service {
                                             BluetoothGattCharacteristic characteristic) {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorWrite(gatt, descriptor, status);
+            bleSemaphore.release();
+        }
     };
 
     /**
@@ -289,9 +297,28 @@ public class BluetoothLeService extends Service {
         if (enabled) {
             // TODO наверное нужно захардкодить UUID-ы дескрипторов
             for (BluetoothGattDescriptor descriptor : characteristic.getDescriptors()) {
-                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                mBluetoothGatt.writeDescriptor(descriptor);
+                new Thread(new DescriptorNotificationSetter(descriptor)).start();
             }
+        }
+    }
+
+    private class DescriptorNotificationSetter implements Runnable {
+
+        private BluetoothGattDescriptor descriptor;
+
+        DescriptorNotificationSetter(BluetoothGattDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public void run() {
+            try {
+                bleSemaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBluetoothGatt.writeDescriptor(descriptor);
         }
     }
 }
