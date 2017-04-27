@@ -244,15 +244,15 @@ public class MainActivity extends Activity {
                         if (battery < 0) {
                             imageViewBattery.setImageResource(R.drawable.battery_disabled);
                         } else if (battery <= 5){
-                            imageViewBluetooth.setImageResource(R.drawable.battery_1);
+                            imageViewBattery.setImageResource(R.drawable.battery_1);
                         } else if (battery <= 25) {
-                            imageViewBluetooth.setImageResource(R.drawable.battery_2);
+                            imageViewBattery.setImageResource(R.drawable.battery_2);
                         } else if (battery <= 50) {
-                            imageViewBluetooth.setImageResource(R.drawable.battery_3);
+                            imageViewBattery.setImageResource(R.drawable.battery_3);
                         } else if (battery <= 75) {
-                            imageViewBluetooth.setImageResource(R.drawable.battery_4);
+                            imageViewBattery.setImageResource(R.drawable.battery_4);
                         } else if (battery <= 100) {
-                            imageViewBluetooth.setImageResource(R.drawable.battery_5);
+                            imageViewBattery.setImageResource(R.drawable.battery_5);
                         }
                     }
                     break;
