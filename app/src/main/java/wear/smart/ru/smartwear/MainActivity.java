@@ -208,6 +208,8 @@ public class MainActivity extends Activity {
                     mConnected = false;
                     imageViewBluetooth.setImageResource(R.drawable.bluetooth_off);
                     imageViewBattery.setImageResource(R.drawable.battery_disabled);
+                    textViewInTemp.setText("0.0");
+                    textViewOutTemp.setText("0.0");
                     connectErrorBuilder
                             .setTitle(R.string.connect_error_dialog_title)
                             .setMessage(R.string.connect_error_dialog_message)

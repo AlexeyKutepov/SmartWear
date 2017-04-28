@@ -197,6 +197,14 @@ public class BluetoothLeService extends Service {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
+            Log.w(TAG, "onDescriptorWrite: " + descriptor.getUuid());
+            bleSemaphore.release();
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            Log.w(TAG, "onCharacteristicWrite: " + characteristic.getUuid());
             bleSemaphore.release();
         }
     };
@@ -273,12 +281,35 @@ public class BluetoothLeService extends Service {
                 if (service != null) {
                     BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
                     if (characteristic != null) {
-                        characteristic.setValue(value);
+                        new Thread(new CharacteristicValueSetter(characteristic, value)).start();
                         return true;
                     }
                 }
         }
         return false;
+    }
+
+    private class CharacteristicValueSetter implements Runnable {
+
+        private BluetoothGattCharacteristic characteristic;
+        private String value;
+
+        CharacteristicValueSetter(BluetoothGattCharacteristic characteristic, String value) {
+            this.characteristic = characteristic;
+            this.value = value;
+        }
+
+        @Override
+        public void run() {
+            Log.w(TAG, "Waiting... Characteristic: " + characteristic.getUuid());
+            try {
+                bleSemaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            characteristic.setValue(value);
+            mBluetoothGatt.writeCharacteristic(characteristic);
+        }
     }
 
     /**
@@ -312,6 +343,7 @@ public class BluetoothLeService extends Service {
 
         @Override
         public void run() {
+            Log.w(TAG, "Waiting... Descriptor: " + descriptor.getUuid());
             try {
                 bleSemaphore.acquire();
             } catch (InterruptedException e) {
