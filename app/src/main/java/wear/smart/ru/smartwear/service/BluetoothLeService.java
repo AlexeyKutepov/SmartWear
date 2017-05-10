@@ -331,8 +331,12 @@ public class BluetoothLeService extends Service {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            characteristic.setValue(value);
-            mBluetoothGatt.writeCharacteristic(characteristic);
+            if (mConnectionState == STATE_CONNECTED) {
+                characteristic.setValue(value);
+                mBluetoothGatt.writeCharacteristic(characteristic);
+            } else {
+                bleSemaphore.release();
+            }
         }
     }
 
@@ -373,8 +377,12 @@ public class BluetoothLeService extends Service {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBluetoothGatt.writeDescriptor(descriptor);
+            if (mConnectionState == STATE_CONNECTED) {
+                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                mBluetoothGatt.writeDescriptor(descriptor);
+            } else {
+                bleSemaphore.release();
+            }
         }
     }
 }
