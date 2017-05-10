@@ -16,6 +16,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
@@ -74,6 +75,25 @@ public class BluetoothLeService extends Service {
     }
 
     /**
+     * Обновление кэша
+     * @param gatt сервис
+     * @return результат
+     */
+    private boolean refreshDeviceCache(BluetoothGatt gatt){
+        try {
+            BluetoothGatt localBluetoothGatt = gatt;
+            Method localMethod = localBluetoothGatt.getClass().getMethod("refresh", new Class[0]);
+            if (localMethod != null) {
+                return (Boolean) localMethod.invoke(localBluetoothGatt, new Object[0]);
+            }
+        }
+        catch (Exception localException) {
+            Log.e(TAG, "An exception occured while refreshing device");
+        }
+        return false;
+    }
+
+    /**
      * Установка соединения
      *
      * @param address адрес
@@ -105,6 +125,7 @@ public class BluetoothLeService extends Service {
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        refreshDeviceCache(mBluetoothGatt);
         Log.d(TAG, "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
@@ -183,6 +204,7 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
+            Log.w(TAG, "onCharacteristicChanged: " + characteristic.getUuid());
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
@@ -191,6 +213,7 @@ public class BluetoothLeService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
+            Log.w(TAG, "onCharacteristicChanged: " + characteristic.getUuid());
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
