@@ -333,7 +333,11 @@ public class BluetoothLeService extends Service {
             }
             if (mConnectionState == STATE_CONNECTED) {
                 characteristic.setValue(value);
-                mBluetoothGatt.writeCharacteristic(characteristic);
+                boolean result = mBluetoothGatt.writeCharacteristic(characteristic);
+                if (!result) {
+                    Log.e(TAG, "Failed write characteristic: " + characteristic.getUuid());
+                    bleSemaphore.release();
+                }
             } else {
                 bleSemaphore.release();
             }
@@ -379,7 +383,11 @@ public class BluetoothLeService extends Service {
             }
             if (mConnectionState == STATE_CONNECTED) {
                 descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                mBluetoothGatt.writeDescriptor(descriptor);
+                boolean result = mBluetoothGatt.writeDescriptor(descriptor);
+                if (!result) {
+                    Log.e(TAG, "Failed write descriptor: " + descriptor.getUuid());
+                    bleSemaphore.release();
+                }
             } else {
                 bleSemaphore.release();
             }
