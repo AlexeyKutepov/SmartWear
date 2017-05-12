@@ -263,7 +263,7 @@ public class BluetoothLeService extends Service {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
                 String message = new String(data).trim();
-                Double result = new BigDecimal(message).setScale(1, RoundingMode.UP).doubleValue();
+                Integer result = new BigDecimal(message).setScale(0, RoundingMode.UP).intValue();
                 intent.putExtra(Constants.OUTSIDE_TEMP, result.toString());
             }
         } else if (Constants.BATTERY_UUID.equals(characteristic.getUuid())) {
