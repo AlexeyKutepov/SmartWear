@@ -210,27 +210,34 @@ public class MainActivity extends Activity {
                     imageViewBattery.setImageResource(R.drawable.battery_disabled);
                     textViewInTemp.setText("0.0");
                     textViewOutTemp.setText("0.0");
-                    connectErrorBuilder
-                            .setTitle(R.string.connect_error_dialog_title)
-                            .setMessage(R.string.connect_error_dialog_message)
-                            .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (!mConnected) {
-                                        searchDeviceTask = new SearchDeviceTask();
-                                        searchDeviceTask.execute();
+                    // Пробуем восстановить соединение
+                    if (mBluetoothLeService != null) {
+                        final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+                        Log.d(TAG, "Connect request result=" + result);
+                    } else {
+                        // Если не получилось восстановить соединение, то выводим сообщение об ошибке
+                        connectErrorBuilder
+                                .setTitle(R.string.connect_error_dialog_title)
+                                .setMessage(R.string.connect_error_dialog_message)
+                                .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if (!mConnected) {
+                                            searchDeviceTask = new SearchDeviceTask();
+                                            searchDeviceTask.execute();
+                                        }
                                     }
-                                }
-                            })
-                            .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    finishAndRemoveTask();
-                                }
-                            });
-                    AlertDialog dialog = connectErrorBuilder.create();
-                    dialog.setCanceledOnTouchOutside(false);
-                    dialog.show();
+                                })
+                                .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        finishAndRemoveTask();
+                                    }
+                                });
+                        AlertDialog dialog = connectErrorBuilder.create();
+                        dialog.setCanceledOnTouchOutside(false);
+                        dialog.show();
+                    }
                     break;
                 case BluetoothLeService.ACTION_DATA_AVAILABLE:
                     // Получены данные
