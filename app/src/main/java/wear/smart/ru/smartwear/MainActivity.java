@@ -211,11 +211,13 @@ public class MainActivity extends Activity {
                     textViewInTemp.setText("0.0");
                     textViewOutTemp.setText("0.0");
                     // Пробуем восстановить соединение
+                    boolean result = false;
                     if (mBluetoothLeService != null) {
-                        final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+                        result = mBluetoothLeService.connect(mDeviceAddress);
                         Log.d(TAG, "Connect request result=" + result);
-                    } else {
-                        // Если не получилось восстановить соединение, то выводим сообщение об ошибке
+                    }
+                    // Если не получилось восстановить соединение, то выводим сообщение об ошибке
+                    if (!result) {
                         connectErrorBuilder
                                 .setTitle(R.string.connect_error_dialog_title)
                                 .setMessage(R.string.connect_error_dialog_message)
