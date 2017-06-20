@@ -64,6 +64,13 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
         }
     }
 
+    @Override
+    public void close() {
+        super.close();
+        deviceDAO = null;
+        deviceTypeDAO = null;
+    }
+
     /**
      * Получить DAO для работы с Device
      * @return {@link DeviceDAO}
