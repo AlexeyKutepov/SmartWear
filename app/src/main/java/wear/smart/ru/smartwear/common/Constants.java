@@ -31,6 +31,14 @@ public class Constants {
     public static final UUID MODE_BOOTS_UUID = UUID.fromString("6e400010-b5a3-f393-e0a9-e50e24dcca9e"); // Ботинки
 
     /**
+     * Элементы одежды
+     */
+    public static final String SMART_HAT = "SMART_HAT";
+    public static final String SMART_COAT = "SMART_COAT";
+    public static final String SMART_MITTENS = "SMART_MITTENS";
+    public static final String SMART_SHOES = "SMART_SHOES";
+
+    /**
      * Сообщение от умной одежды
      */
     public static final String INSIDE_TEMP = "insideTemp";

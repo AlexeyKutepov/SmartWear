@@ -26,25 +26,38 @@ import android.widget.ToggleButton;
 
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.component.VerticalSeekBar;
+import wear.smart.ru.smartwear.db.DBHelper;
 import wear.smart.ru.smartwear.service.BluetoothLeService;
 
 public class MainActivity extends Activity {
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
+    /**
+     * Bluetooth
+     */
     private BluetoothAdapter bluetooth;
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
 
+    /**
+     * Диалоговые окна
+     */
     private ProgressDialog progressDialog;
     private AlertDialog.Builder bluetoothNotSupportedBuilder;
     private AlertDialog.Builder devicesNotFoundBuilder;
     private AlertDialog.Builder devicesListBuilder;
     private AlertDialog.Builder connectErrorBuilder;
 
+    /**
+     * Задачи
+     */
     private SearchDeviceTask searchDeviceTask;
 
+    /**
+     * Интерфейс
+     */
     private ArrayAdapter<String> arrayAdapter;
     private Switch switchMode;
     private VerticalSeekBar seekBarTemp;
@@ -57,12 +70,19 @@ public class MainActivity extends Activity {
     private ImageView imageViewBattery;
     private ImageView imageViewBluetooth;
 
+    /**
+     * База данных
+     */
+    DBHelper dbHelper = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mDeviceAddress = null;
+
+        dbHelper = new DBHelper(this);
 
         /*
          * Диалоговые окна
@@ -119,7 +139,7 @@ public class MainActivity extends Activity {
         } else {
             bluetoothNotSupportedBuilder.setMessage(R.string.bluetooth_is_not_supported_dialog_message)
                     .setTitle(R.string.bluetooth_is_not_supported_dialog_title)
-                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             finishAndRemoveTask();
