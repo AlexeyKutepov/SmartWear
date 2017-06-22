@@ -6,4 +6,6 @@
     android:layout_height="match_parent"
     tools:context="wear.smart.ru.smartwear.DeviceListActivity">
 
+    <include layout="@layout/device_list_toolbar" />
+
 </android.support.constraint.ConstraintLayout>

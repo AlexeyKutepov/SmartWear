@@ -20,4 +20,7 @@
     <string name="search_devices_result_dialog_title">Выберите устройство</string>
     <string name="connect_error_dialog_title">Ошибка соединения</string>
     <string name="connect_error_dialog_message">Соединение было отклонено</string>
+
+    <string name="refresh_devices">Обновить список устройств</string>
+    <string name="add_devices">Добавить устройства</string>
 </resources>
