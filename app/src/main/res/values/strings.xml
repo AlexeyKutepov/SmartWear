@@ -23,4 +23,7 @@
 
     <string name="refresh_devices">Обновить список устройств</string>
     <string name="add_devices">Добавить устройства</string>
+
+    <string name="smart_coat">SMART COAT</string>
+    <string name="default_mac">00:00:00:00:00:00</string>
 </resources>
