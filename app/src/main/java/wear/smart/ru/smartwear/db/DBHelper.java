@@ -74,11 +74,15 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
     /**
      * Получить DAO для работы с Device
      * @return {@link DeviceDAO}
-     * @throws SQLException ошибка при работе с базой данных
      */
-    public DeviceDAO getDeviceDAO() throws SQLException {
+    public DeviceDAO getDeviceDAO() {
         if (deviceDAO == null) {
-            deviceDAO = new DeviceDAO(connectionSource, Device.class);
+            try {
+                deviceDAO = new DeviceDAO(connectionSource, Device.class);
+            } catch (SQLException e) {
+                Log.e(TAG, "Can't get DAO", e);
+                throw new RuntimeException(e);
+            }
         }
         return deviceDAO;
     }
@@ -86,11 +90,15 @@ public class DBHelper extends OrmLiteSqliteOpenHelper {
     /**
      * Получить DAO для работы с DeviceType
      * @return {@link DeviceTypeDAO}
-     * @throws SQLException ошибка при работе с базой данных
      */
-    public DeviceTypeDAO getDeviceTypeDAO() throws SQLException {
+    public DeviceTypeDAO getDeviceTypeDAO() {
         if (deviceTypeDAO == null) {
-            deviceTypeDAO = new DeviceTypeDAO(connectionSource, DeviceType.class);
+            try {
+                deviceTypeDAO = new DeviceTypeDAO(connectionSource, DeviceType.class);
+            } catch (SQLException e) {
+                Log.e(TAG, "Can't get DAO", e);
+                throw new RuntimeException(e);
+            }
         }
         return deviceTypeDAO;
     }

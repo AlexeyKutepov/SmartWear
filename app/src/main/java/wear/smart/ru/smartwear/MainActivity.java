@@ -27,6 +27,7 @@ import android.widget.ToggleButton;
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.component.VerticalSeekBar;
 import wear.smart.ru.smartwear.db.DBHelper;
+import wear.smart.ru.smartwear.db.dao.DeviceDAO;
 import wear.smart.ru.smartwear.service.BluetoothLeService;
 
 public class MainActivity extends Activity {
@@ -73,7 +74,8 @@ public class MainActivity extends Activity {
     /**
      * База данных
      */
-    DBHelper dbHelper = null;
+    private DBHelper dbHelper = null;
+    private DeviceDAO deviceDAO = null;
 
 
     @Override
@@ -82,7 +84,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mDeviceAddress = null;
 
+        /*
+         * База данных
+         */
         dbHelper = new DBHelper(this);
+        deviceDAO = dbHelper.getDeviceDAO();
 
         /*
          * Диалоговые окна
@@ -128,7 +134,6 @@ public class MainActivity extends Activity {
             if (bluetooth.isEnabled()) {
                 Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
                 bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
                 registerReceiver(receiver, makeIntentFilter());
                 searchDeviceTask.execute();
             } else {
