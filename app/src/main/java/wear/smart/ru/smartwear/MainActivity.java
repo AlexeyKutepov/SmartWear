@@ -130,8 +130,8 @@ public class MainActivity extends Activity {
          */
         bluetooth = BluetoothAdapter.getDefaultAdapter();
 
-//        Intent deviceListIntent = new Intent(this, DeviceListActivity.class);
-//        startActivity(deviceListIntent);
+        Intent deviceListIntent = new Intent(this, DeviceListActivity.class);
+        startActivity(deviceListIntent);
 
         if (bluetooth != null) {
             if (bluetooth.isEnabled()) {

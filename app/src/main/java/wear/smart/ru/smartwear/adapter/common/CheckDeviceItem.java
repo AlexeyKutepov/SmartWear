@@ -3,16 +3,16 @@ package wear.smart.ru.smartwear.adapter.common;
 /**
  * Описание устройства
  */
-public class DeviceItem {
+public class CheckDeviceItem {
     private String deviceName;
     private String deviceMac;
     private int deviceIcon;
     private boolean deviceCheckBox;
 
-    public DeviceItem() {
+    public CheckDeviceItem() {
     }
 
-    public DeviceItem(String deviceName, String deviceMac, int deviceIcon, boolean deviceCheckBox) {
+    public CheckDeviceItem(String deviceName, String deviceMac, int deviceIcon, boolean deviceCheckBox) {
         this.deviceName = deviceName;
         this.deviceMac = deviceMac;
         this.deviceIcon = deviceIcon;

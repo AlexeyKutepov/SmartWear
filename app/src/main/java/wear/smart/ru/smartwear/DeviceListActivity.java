@@ -18,8 +18,8 @@ import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 
-import wear.smart.ru.smartwear.adapter.DeviceAdapter;
-import wear.smart.ru.smartwear.adapter.common.DeviceItem;
+import wear.smart.ru.smartwear.adapter.CheckDeviceListAdapter;
+import wear.smart.ru.smartwear.adapter.common.CheckDeviceItem;
 import wear.smart.ru.smartwear.common.Constants;
 
 public class DeviceListActivity extends AppCompatActivity {
@@ -48,8 +48,8 @@ public class DeviceListActivity extends AppCompatActivity {
      * Адаптеры
      */
     private ArrayAdapter<String> arrayAdapter;
-    private ArrayList<DeviceItem> arrayList = new ArrayList<>();
-    private DeviceAdapter deviceAdapter;
+    private ArrayList<CheckDeviceItem> arrayList = new ArrayList<>();
+    private CheckDeviceListAdapter checkDeviceListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,8 +149,8 @@ public class DeviceListActivity extends AppCompatActivity {
                     arrayAdapter.add(device.getName() + "\n" + device.getAddress());
 
 
-                    DeviceItem deviceItem = new DeviceItem(device.getName(), device.getAddress(), R.drawable.bluetooth_on, true);
-                    arrayList.add(deviceItem);
+                    CheckDeviceItem checkDeviceItem = new CheckDeviceItem(device.getName(), device.getAddress(), R.drawable.bluetooth_on, true);
+                    arrayList.add(checkDeviceItem);
                     break;
             }
         }
@@ -206,9 +206,9 @@ public class DeviceListActivity extends AppCompatActivity {
                 dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             } else {
-                deviceAdapter = new DeviceAdapter(context, arrayList);
+                checkDeviceListAdapter = new CheckDeviceListAdapter(context, arrayList);
                 devicesListBuilder.setTitle(R.string.search_devices_result_dialog_title)
-                          .setAdapter(deviceAdapter, null)
+                          .setAdapter(checkDeviceListAdapter, null)
 
 //                        .setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
 //                            public void onClick(DialogInterface dialog, int which) {

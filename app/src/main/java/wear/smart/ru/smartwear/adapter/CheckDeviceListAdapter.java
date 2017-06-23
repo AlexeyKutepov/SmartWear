@@ -12,32 +12,32 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import wear.smart.ru.smartwear.R;
-import wear.smart.ru.smartwear.adapter.common.DeviceItem;
+import wear.smart.ru.smartwear.adapter.common.CheckDeviceItem;
 
 /**
  * Адаптер для списка устройств
  */
-public class DeviceAdapter extends BaseAdapter {
+public class CheckDeviceListAdapter extends BaseAdapter {
 
     private Context ctx;
     private LayoutInflater lInflater;
-    private ArrayList<DeviceItem> deviceItemList;
+    private ArrayList<CheckDeviceItem> checkDeviceItemList;
 
-    public DeviceAdapter(Context context, ArrayList<DeviceItem> deviceItemList) {
+    public CheckDeviceListAdapter(Context context, ArrayList<CheckDeviceItem> checkDeviceItemList) {
         this.ctx = context;
-        this.deviceItemList = deviceItemList;
+        this.checkDeviceItemList = checkDeviceItemList;
         this.lInflater = (LayoutInflater) ctx
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public int getCount() {
-        return deviceItemList.size();
+        return checkDeviceItemList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return deviceItemList.get(position);
+        return checkDeviceItemList.get(position);
     }
 
     @Override
@@ -49,10 +49,10 @@ public class DeviceAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         if (view == null) {
-            view = lInflater.inflate(R.layout.device_item, parent, false);
+            view = lInflater.inflate(R.layout.check_device_item, parent, false);
         }
 
-        DeviceItem d = ((DeviceItem) getItem(position));
+        CheckDeviceItem d = ((CheckDeviceItem) getItem(position));
 
         ((TextView) view.findViewById(R.id.deviceName)).setText(d.getDeviceName());
         ((TextView) view.findViewById(R.id.deviceMac)).setText(d.getDeviceMac());
