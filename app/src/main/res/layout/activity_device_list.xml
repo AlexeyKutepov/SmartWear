@@ -8,4 +8,18 @@
 
     <include layout="@layout/device_list_toolbar" />
 
+    <ListView
+        android:id="@+id/deviceListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="65dp"
+        android:layout_marginBottom="8dp"
+        tools:layout_editor_absoluteY="89dp"
+        tools:layout_editor_absoluteX="3dp">
+
+    </ListView>
+
 </android.support.constraint.ConstraintLayout>

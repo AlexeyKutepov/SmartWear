@@ -15,11 +15,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.util.ArrayList;
 
 import wear.smart.ru.smartwear.adapter.CheckDeviceListAdapter;
+import wear.smart.ru.smartwear.adapter.DeviceListAdapter;
 import wear.smart.ru.smartwear.adapter.common.CheckDeviceItem;
+import wear.smart.ru.smartwear.adapter.common.DeviceItem;
 import wear.smart.ru.smartwear.common.Constants;
 
 public class DeviceListActivity extends AppCompatActivity {
@@ -37,6 +40,11 @@ public class DeviceListActivity extends AppCompatActivity {
     private SearchDeviceTask searchDeviceTask;
 
     /**
+     * Интерфейс
+     */
+    private ListView deviceListView;
+
+    /**
      * Диалоговые окна
      */
     private ProgressDialog progressDialog;
@@ -51,6 +59,9 @@ public class DeviceListActivity extends AppCompatActivity {
     private ArrayList<CheckDeviceItem> arrayList = new ArrayList<>();
     private CheckDeviceListAdapter checkDeviceListAdapter;
 
+    private ArrayList<DeviceItem> deviceList = new ArrayList<>();
+    private DeviceListAdapter deviceListAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +69,11 @@ public class DeviceListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.device_list_toolbar);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.mipmap.ic_launcher);
+
+        /*
+         * Интерфейс
+         */
+        deviceListView = (ListView) findViewById(R.id.deviceListView);
 
         /*
          * Адаптеры
@@ -151,6 +167,9 @@ public class DeviceListActivity extends AppCompatActivity {
 
                     CheckDeviceItem checkDeviceItem = new CheckDeviceItem(device.getName(), device.getAddress(), R.drawable.bluetooth_on, true);
                     arrayList.add(checkDeviceItem);
+
+                    DeviceItem deviceItem = new DeviceItem(device.getName(), device.getAddress(), R.drawable.bluetooth_on);
+                    deviceList.add(deviceItem);
                     break;
             }
         }
@@ -207,19 +226,13 @@ public class DeviceListActivity extends AppCompatActivity {
                 dialog.show();
             } else {
                 checkDeviceListAdapter = new CheckDeviceListAdapter(context, arrayList);
+                deviceListAdapter = new DeviceListAdapter(context, deviceList);
                 devicesListBuilder.setTitle(R.string.search_devices_result_dialog_title)
-                          .setAdapter(checkDeviceListAdapter, null)
-
-//                        .setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                String item = arrayAdapter.getItem(which);
-//                            }
-//                        })
-                        .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
+                        .setAdapter(checkDeviceListAdapter, null)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                searchDeviceTask = new SearchDeviceTask();
-                                searchDeviceTask.execute();
+
                             }
                         })
                         .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
@@ -229,8 +242,10 @@ public class DeviceListActivity extends AppCompatActivity {
                             }
                         });
                 AlertDialog dialog = devicesListBuilder.create();
-                dialog.setCanceledOnTouchOutside(false);
+//                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
+
+                deviceListView.setAdapter(deviceListAdapter);
             }
         }
     }
