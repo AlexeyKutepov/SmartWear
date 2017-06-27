@@ -148,7 +148,8 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintVertical_bias="0.280"
         android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:visibility="invisible"/>
 
     <ToggleButton
         android:id="@+id/buttonJacket"
@@ -164,7 +165,8 @@
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintVertical_bias="0.440" />
+        app:layout_constraintVertical_bias="0.440"
+        android:visibility="invisible"/>
 
     <ToggleButton
         android:id="@+id/buttonMittens"
@@ -180,7 +182,8 @@
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintVertical_bias="0.600" />
+        app:layout_constraintVertical_bias="0.600"
+        android:visibility="invisible"/>
 
     <ToggleButton
         android:id="@+id/buttonBoots"
@@ -196,7 +199,8 @@
         android:layout_marginBottom="8dp"
         app:layout_constraintVertical_bias="0.760"
         android:layout_marginLeft="8dp"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:visibility="invisible"/>
 
     <Switch
         android:id="@+id/switchMode"
