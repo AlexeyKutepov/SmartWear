@@ -7,7 +7,7 @@ BLECharacteristic temperatureOutsideString = BLECharacteristic("6e400003-b5a3-f3
 BLECharacteristic batteryString = BLECharacteristic("6e400004-b5a3-f393-e0a9-e50e24dcca9e", BLENotify, 20); // от 0 до 100
 
 BLECharacteristic mode = BLECharacteristic("6e400005-b5a3-f393-e0a9-e50e24dcca9e", BLERead | BLEWrite, 20); // 0 - ручн; 1 - авто
-BLECharacteristic inputTemp = BLECharacteristic("6e400006-b5a3-f393-e0a9-e50e24dcca9e", BLERead | BLEWrite, 20); // температура, заданная на телефоне
+BLEUnsignedIntCharacteristic inputTemp = BLEUnsignedIntCharacteristic("6e400006-b5a3-f393-e0a9-e50e24dcca9e", BLERead | BLEWrite); // температура, заданная на телефоне
 
 
 long previousMillis = 0;
@@ -16,8 +16,10 @@ String tempInside;
 String tempOutside;
 String battery;
 
+int d9Pin = 9;
 
 void setup () {
+
   Serial.begin(9600);
 
   Serial.println("Starting...");
@@ -35,16 +37,20 @@ void setup () {
 
   blePeripheral.begin();
 
+  pinMode(d9Pin, OUTPUT);
+
   Serial.println("Setup complete");
 }
 
 void loop () {
+
   BLECentral central = blePeripheral.central();
 
-
-   if ( central ) {
-    Serial.println("Go!");
+  if ( central ) {
     while ( central.connected() ) {
+      if (inputTemp.written()) {
+        analogWrite(d9Pin, inputTemp.value());
+      }
       long currentMillis = millis();
       if ( currentMillis - previousMillis >= 3000 ) {
         previousMillis = currentMillis;
@@ -60,22 +66,22 @@ void updateTemperature () {
   tempInside = getInsideTemp();
   tempInside.getBytes(buff, 20);
   temperatureInsideString.setValue((unsigned char*)buff, 20);
-//  Serial.print("Setting temperatureInsideString: ");
-//  printBuff();
+  // Serial.print("Setting temperatureInsideString: ");
+  // printBuff();
 
   memset(buff, 0x00, sizeof buff);
   tempOutside = getOutsideTemp();
   tempOutside.getBytes(buff, 20);
   temperatureOutsideString.setValue((unsigned char*)buff, 20);
-//  Serial.print("Setting temperatureOutsideString: ");
-//  printBuff();
+  // Serial.print("Setting temperatureOutsideString: ");
+  // printBuff();
 
   memset(buff, 0x00, sizeof buff);
   battery = getBattery();
   battery.getBytes(buff, 20);
   batteryString.setValue((unsigned char*)buff, 20);
-//  Serial.print("Setting batteryString: ");
-//  printBuff();
+  // Serial.print("Setting batteryString: ");
+  // printBuff();
 }
 
 void printBuff() {

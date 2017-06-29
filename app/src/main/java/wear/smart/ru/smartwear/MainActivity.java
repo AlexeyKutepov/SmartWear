@@ -307,14 +307,15 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Изменение температуры вручную (от -20 до +42 градусов)
+     * Изменение температуры вручную
      */
     VerticalSeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new VerticalSeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             if (mBluetoothLeService != null) {
-                double temp = -20 + 0.62 * progress;
-                mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, String.valueOf(temp));
+//                byte temp = (byte) (2.55 * progress);
+                int temp = (int)(2.55 * progress);
+                mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, temp);
             }
         }
 

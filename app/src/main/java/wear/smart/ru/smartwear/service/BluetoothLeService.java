@@ -24,6 +24,9 @@ import java.util.concurrent.Semaphore;
 
 import wear.smart.ru.smartwear.common.Constants;
 
+import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_SINT16;
+import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16;
+
 public class BluetoothLeService extends Service {
     private final static String TAG = BluetoothLeService.class.getSimpleName();
 
@@ -311,14 +314,40 @@ public class BluetoothLeService extends Service {
         return false;
     }
 
+    /**
+     * Задать значение характеристики
+     * @param characteristicUUID уникальный UUID характеристики
+     * @param value значение
+     * @return результат выполнения операции
+     */
+    public boolean setCharacteristicValueByUUID(UUID characteristicUUID, int value) {
+        if (mBluetoothGatt != null) {
+            BluetoothGattService service = mBluetoothGatt.getService(Constants.TEMP_SERVICE_UUID);
+            if (service != null) {
+                BluetoothGattCharacteristic characteristic = service.getCharacteristic(characteristicUUID);
+                if (characteristic != null) {
+                    new Thread(new CharacteristicValueSetter(characteristic, value)).start();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private class CharacteristicValueSetter implements Runnable {
 
         private BluetoothGattCharacteristic characteristic;
-        private String value;
+        private String stringValue = null;
+        private int intValue = 0;
 
         CharacteristicValueSetter(BluetoothGattCharacteristic characteristic, String value) {
             this.characteristic = characteristic;
-            this.value = value;
+            this.stringValue = value;
+        }
+
+        CharacteristicValueSetter(BluetoothGattCharacteristic characteristic, int value) {
+            this.characteristic = characteristic;
+            this.intValue = value;
         }
 
         @Override
@@ -330,7 +359,11 @@ public class BluetoothLeService extends Service {
                 e.printStackTrace();
             }
             if (mConnectionState == STATE_CONNECTED) {
-                characteristic.setValue(value);
+                if (stringValue != null) {
+                    characteristic.setValue(stringValue);
+                } else {
+                    characteristic.setValue(intValue, FORMAT_UINT16, 0);
+                }
                 boolean result = mBluetoothGatt.writeCharacteristic(characteristic);
                 if (!result) {
                     Log.e(TAG, "Failed write characteristic: " + characteristic.getUuid());
