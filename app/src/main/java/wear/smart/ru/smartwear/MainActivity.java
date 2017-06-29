@@ -313,7 +313,6 @@ public class MainActivity extends Activity {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             if (mBluetoothLeService != null) {
-//                byte temp = (byte) (2.55 * progress);
                 int temp = (int)(2.55 * progress);
                 mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, temp);
             }
