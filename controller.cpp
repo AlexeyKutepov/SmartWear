@@ -15,15 +15,12 @@ byte buff[20];
 String tempInside;
 String tempOutside;
 String battery;
+boolean isLedOn = false;
 
 int d9Pin = 9;
 
 void setup () {
-
   Serial.begin(9600);
-
-  Serial.println("Starting...");
-
   blePeripheral.setLocalName("SMART_COAT");
   blePeripheral.setAdvertisedServiceUuid(uartService.uuid());
 
@@ -39,23 +36,27 @@ void setup () {
 
   pinMode(d9Pin, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-
-  Serial.println("Setup complete");
 }
 
 void loop () {
   digitalWrite(LED_BUILTIN, HIGH);
-
+  isLedOn = true;
   BLECentral central = blePeripheral.central();
-
   if ( central ) {
     while ( central.connected() ) {
       if (inputTemp.written()) {
         analogWrite(d9Pin, inputTemp.value());
-//        Serial.println(inputTemp.value());
+        Serial.println(inputTemp.value());
       }
       long currentMillis = millis();
       if ( currentMillis - previousMillis >= 3000 ) {
+        if (isLedOn) {
+          digitalWrite(LED_BUILTIN, LOW);
+          isLedOn = false;
+        } else {
+          digitalWrite(LED_BUILTIN, HIGH);
+          isLedOn = true;
+        }
         previousMillis = currentMillis;
         updateTemperature();
       }
