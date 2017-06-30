@@ -38,11 +38,13 @@ void setup () {
   blePeripheral.begin();
 
   pinMode(d9Pin, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.println("Setup complete");
 }
 
 void loop () {
+  digitalWrite(LED_BUILTIN, HIGH);
 
   BLECentral central = blePeripheral.central();
 
@@ -50,6 +52,7 @@ void loop () {
     while ( central.connected() ) {
       if (inputTemp.written()) {
         analogWrite(d9Pin, inputTemp.value());
+//        Serial.println(inputTemp.value());
       }
       long currentMillis = millis();
       if ( currentMillis - previousMillis >= 3000 ) {
