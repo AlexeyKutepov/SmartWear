@@ -14,7 +14,6 @@ long previousMillis = 0;
 byte buff[20];
 String tempInside;
 String tempOutside;
-String battery;
 boolean isLedOn = false;
 
 int d9Pin = 9;
@@ -57,8 +56,12 @@ void loop () {
           digitalWrite(LED_BUILTIN, HIGH);
           isLedOn = true;
         }
+        
+        updateBatteryLevel();
+
+        updateTemperature();   
+             
         previousMillis = currentMillis;
-        updateTemperature();
       }
     }
   }
@@ -79,13 +82,6 @@ void updateTemperature () {
   temperatureOutsideString.setValue((unsigned char*)buff, 20);
   // Serial.print("Setting temperatureOutsideString: ");
   // printBuff();
-
-  memset(buff, 0x00, sizeof buff);
-  battery = getBattery();
-  battery.getBytes(buff, 20);
-  batteryString.setValue((unsigned char*)buff, 20);
-  // Serial.print("Setting batteryString: ");
-  // printBuff();
 }
 
 void printBuff() {
@@ -103,6 +99,15 @@ String getOutsideTemp () {
   return (String)-15.0;
 }
 
-String getBattery () {
-  return (String)75;
+/**
+ * Актуализировать заряд аккумулятора
+ */
+void updateBatteryLevel() {
+  int battery = analogRead(A0);
+  int batteryLevel = map(battery, 700, 1023, 0, 100);
+  Serial.print("Battery Level % is now: "); // print it
+  Serial.println(batteryLevel);
+  memset(buff, 0x00, sizeof buff);
+  ((String )batteryLevel).getBytes(buff, 20);
+  batteryString.setValue((unsigned char*)buff, 20);
 }
