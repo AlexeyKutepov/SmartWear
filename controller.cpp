@@ -1,4 +1,5 @@
 #include <CurieBLE.h>
+#include <BME280.h>
 
 BLEPeripheral blePeripheral;
 BLEService uartService = BLEService("6e400001-b5a3-f393-e0a9-e50e24dcca9e");
@@ -9,6 +10,11 @@ BLECharacteristic batteryString = BLECharacteristic("6e400004-b5a3-f393-e0a9-e50
 BLECharacteristic mode = BLECharacteristic("6e400005-b5a3-f393-e0a9-e50e24dcca9e", BLERead | BLEWrite, 20); // 0 - ручн; 1 - авто
 BLEUnsignedIntCharacteristic inputTemp = BLEUnsignedIntCharacteristic("6e400006-b5a3-f393-e0a9-e50e24dcca9e", BLERead | BLEWrite); // температура, заданная на телефоне
 
+BME280 bme;
+bool isBmeDetected = false;
+bool metric = false;
+float temp(NAN), hum(NAN), pres(NAN);
+uint8_t pressureUnit(3);
 
 long previousMillis = 0;
 byte buff[20];
@@ -33,6 +39,10 @@ void setup () {
 
   blePeripheral.begin();
 
+  if (bme.begin()) {
+    isBmeDetected = true;
+  }
+
   pinMode(d9Pin, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -48,7 +58,7 @@ void loop () {
         Serial.println(inputTemp.value());
       }
       long currentMillis = millis();
-      if ( currentMillis - previousMillis >= 3000 ) {
+      if ( currentMillis - previousMillis >= 5000 ) {
         if (isLedOn) {
           digitalWrite(LED_BUILTIN, LOW);
           isLedOn = false;
@@ -73,15 +83,15 @@ void updateTemperature () {
   tempInside = getInsideTemp();
   tempInside.getBytes(buff, 20);
   temperatureInsideString.setValue((unsigned char*)buff, 20);
-  // Serial.print("Setting temperatureInsideString: ");
-  // printBuff();
 
-  memset(buff, 0x00, sizeof buff);
-  tempOutside = getOutsideTemp();
-  tempOutside.getBytes(buff, 20);
-  temperatureOutsideString.setValue((unsigned char*)buff, 20);
-  // Serial.print("Setting temperatureOutsideString: ");
-  // printBuff();
+  if (isBmeDetected) {
+    bme.ReadData(pres, temp, hum, metric, pressureUnit);
+  
+    memset(buff, 0x00, sizeof buff);
+    tempOutside = String((temp - 32) * 5 / 9, DEC);
+    tempOutside.getBytes(buff, 20);
+    temperatureOutsideString.setValue((unsigned char*)buff, 20);
+  }
 }
 
 void printBuff() {
@@ -93,10 +103,6 @@ void printBuff() {
 
 String getInsideTemp () {
   return (String)36.7;
-}
-
-String getOutsideTemp () {
-  return (String)-15.0;
 }
 
 /**
