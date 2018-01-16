@@ -24,18 +24,20 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import wear.smart.ru.smartwear.bluetooth.BluetoothClient;
+import wear.smart.ru.smartwear.bluetooth.BluetoothServer;
 import wear.smart.ru.smartwear.common.Constants;
 import wear.smart.ru.smartwear.component.VerticalSeekBar;
-import wear.smart.ru.smartwear.service.BluetoothLeService;
+
 
 public class MainActivity extends Activity {
 
     private final static String TAG = MainActivity.class.getSimpleName();
 
     private BluetoothAdapter bluetooth;
+    private BluetoothClient bluetoothClient;
+    private BluetoothServer bluetoothServer;
     private String mDeviceAddress;
-    private BluetoothLeService mBluetoothLeService;
-    private boolean mConnected = false;
 
     private ProgressDialog progressDialog;
     private AlertDialog.Builder bluetoothNotSupportedBuilder;
@@ -50,10 +52,6 @@ public class MainActivity extends Activity {
     private VerticalSeekBar seekBarTemp;
     private TextView textViewOutTemp;
     private TextView textViewInTemp;
-    private ToggleButton buttonHat;
-    private ToggleButton buttonJacket;
-    private ToggleButton buttonMittens;
-    private ToggleButton buttonBoots;
     private ImageView imageViewBattery;
     private ImageView imageViewBluetooth;
 
@@ -83,14 +81,6 @@ public class MainActivity extends Activity {
         switchMode.setOnCheckedChangeListener(onCheckedChangeListenerSwitchMode);
         textViewOutTemp = (TextView) findViewById(R.id.textViewOutTemp);
         textViewInTemp = (TextView) findViewById(R.id.textViewInTemp);
-        buttonHat = (ToggleButton) findViewById(R.id.buttonHat);
-        buttonHat.setOnCheckedChangeListener(onButtonHatCheckedChangeListener);
-        buttonJacket = (ToggleButton) findViewById(R.id.buttonJacket);
-        buttonJacket.setOnCheckedChangeListener(onButtonJacketCheckedChangeListener);
-        buttonMittens = (ToggleButton) findViewById(R.id.buttonMittens);
-        buttonMittens.setOnCheckedChangeListener(onButtonMittensCheckedChangeListener);
-        buttonBoots = (ToggleButton) findViewById(R.id.buttonBoots);
-        buttonBoots.setOnCheckedChangeListener(onButtonBootsCheckedChangeListener);
         imageViewBattery = (ImageView) findViewById(R.id.imageViewBattery);
         imageViewBluetooth = (ImageView) findViewById(R.id.imageViewBluetooth);
 
@@ -106,9 +96,7 @@ public class MainActivity extends Activity {
 
         if (bluetooth != null) {
             if (bluetooth.isEnabled()) {
-                Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-                bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
+                bluetoothClient = new BluetoothClient(bluetooth);
                 registerReceiver(receiver, makeIntentFilter());
                 searchDeviceTask.execute();
             } else {
@@ -131,33 +119,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerReceiver(receiver, makeIntentFilter());
-        if (mBluetoothLeService != null) {
-            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            Log.d(TAG, "Connect request result=" + result);
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(receiver);
-        if (mBluetoothLeService != null) {
-          mBluetoothLeService.disconnect();
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(receiver);
-        unbindService(mServiceConnection);
-        mBluetoothLeService = null;
-    }
-
     /**
      * Обработка событий
      *
@@ -169,12 +130,28 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) { // Пользователь включил bluetooth
-            Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-            bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-
+            bluetoothClient = new BluetoothClient(bluetooth);
             registerReceiver(receiver, makeIntentFilter());
             searchDeviceTask.execute();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, makeIntentFilter());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
     }
 
     /**
@@ -201,99 +178,11 @@ public class MainActivity extends Activity {
                     //Добавляем имя и адрес в array adapter, чтобы показвать в ListView
                     arrayAdapter.add(device.getName() + "\n" + device.getAddress());
                     break;
-                case BluetoothLeService.ACTION_GATT_CONNECTED:
-                    // Соединение установлено
-                    mConnected = true;
-                    imageViewBluetooth.setImageResource(R.drawable.bluetooth_on);
-                    break;
-                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
-                    // Соединение разорвано
-                    mConnected = false;
-                    imageViewBluetooth.setImageResource(R.drawable.bluetooth_off);
-                    imageViewBattery.setImageResource(R.drawable.battery_disabled);
-                    textViewInTemp.setText("0.0");
-                    textViewOutTemp.setText("0.0");
-                    // Пробуем восстановить соединение
-                    boolean result = false;
-                    if (mBluetoothLeService != null) {
-                        result = mBluetoothLeService.connect(mDeviceAddress);
-                        Log.d(TAG, "Connect request result=" + result);
-                    }
-                    // Если не получилось восстановить соединение, то выводим сообщение об ошибке
-                    if (!result) {
-                        connectErrorBuilder
-                                .setTitle(R.string.connect_error_dialog_title)
-                                .setMessage(R.string.connect_error_dialog_message)
-                                .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        if (!mConnected) {
-                                            searchDeviceTask = new SearchDeviceTask();
-                                            searchDeviceTask.execute();
-                                        }
-                                    }
-                                })
-                                .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        finishAndRemoveTask();
-                                    }
-                                });
-                        AlertDialog dialog = connectErrorBuilder.create();
-                        dialog.setCanceledOnTouchOutside(false);
-                        dialog.show();
-                    }
-                    break;
-                case BluetoothLeService.ACTION_DATA_AVAILABLE:
-                    // Получены данные
-                    // Пришло сообщение от устройства
-                    if (intent.hasExtra(Constants.INSIDE_TEMP)) {
-                        textViewInTemp.setText(intent.getStringExtra(Constants.INSIDE_TEMP));
-                    }
-                    if (intent.hasExtra(Constants.OUTSIDE_TEMP)) {
-                        textViewOutTemp.setText(intent.getStringExtra(Constants.OUTSIDE_TEMP));
-                    }
-                    if (intent.hasExtra(Constants.BATTERY)) {
-                        Double battery = intent.getDoubleExtra(Constants.BATTERY, -1);
-                        if (battery < 0) {
-                            imageViewBattery.setImageResource(R.drawable.battery_disabled);
-                        } else if (battery <= 5){
-                            imageViewBattery.setImageResource(R.drawable.battery_1);
-                        } else if (battery <= 25) {
-                            imageViewBattery.setImageResource(R.drawable.battery_2);
-                        } else if (battery <= 50) {
-                            imageViewBattery.setImageResource(R.drawable.battery_3);
-                        } else if (battery <= 75) {
-                            imageViewBattery.setImageResource(R.drawable.battery_4);
-                        } else if (battery <= 100) {
-                            imageViewBattery.setImageResource(R.drawable.battery_5);
-                        }
-                    }
-                    break;
+
             }
         }
     };
 
-    /**
-     * Управление соединениями
-     */
-    private final ServiceConnection mServiceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName componentName, IBinder service) {
-            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-            if (!mBluetoothLeService.initialize()) {
-                Log.e(TAG, "Unable to initialize Bluetooth");
-                finish();
-            }
-            mBluetoothLeService.connect(mDeviceAddress);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName componentName) {
-            mBluetoothLeService = null;
-        }
-    };
 
     /**
      * Фильтр событий
@@ -303,9 +192,6 @@ public class MainActivity extends Activity {
     private static IntentFilter makeIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothDevice.ACTION_FOUND);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
 
@@ -315,10 +201,9 @@ public class MainActivity extends Activity {
     VerticalSeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new VerticalSeekBar.OnSeekBarChangeListener() {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (mBluetoothLeService != null) {
-                int temp = (int)(2.55 * progress);
-                mBluetoothLeService.setCharacteristicValueByUUID(Constants.INPUT_TEMP_UUID, temp);
-            }
+            Integer temp = (int)(2.55 * progress);
+            String data = "F0" + Integer.toHexString(temp) + Integer.toHexString(temp) + Integer.toHexString(temp) + Integer.toHexString(temp);
+            bluetoothClient.sendData(hexStringToByteArray(data));
         }
 
         @Override
@@ -333,96 +218,14 @@ public class MainActivity extends Activity {
     };
 
     /**
-     * Обработка нажатия кнопки с иконкой шапки
-     */
-    ToggleButton.OnCheckedChangeListener onButtonHatCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (mBluetoothLeService != null) {
-                if (isChecked) {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_HAT_UUID, "1");
-                } else {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_HAT_UUID, "0");
-                }
-            }
-        }
-    };
-
-    /**
-     * Обработка нажатия кнопки с иконкой куртки
-     */
-    ToggleButton.OnCheckedChangeListener onButtonJacketCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (mBluetoothLeService != null) {
-                if (isChecked) {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_JACKET_UUID, "1");
-                } else {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_JACKET_UUID, "0");
-                }
-            }
-        }
-    };
-
-    /**
-     * Обработка нажатия кнопки с иконкой рукавиц
-     */
-    ToggleButton.OnCheckedChangeListener onButtonMittensCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (mBluetoothLeService != null) {
-                if (isChecked) {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_MITTENS_UUID, "1");
-                } else {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_MITTENS_UUID, "0");
-                }
-            }
-        }
-    };
-
-    /**
-     * Обработка нажатия кнопки с иконкой ботинок
-     */
-    ToggleButton.OnCheckedChangeListener onButtonBootsCheckedChangeListener = new ToggleButton.OnCheckedChangeListener() {
-
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (mBluetoothLeService != null) {
-                if (isChecked) {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_BOOTS_UUID, "1");
-                } else {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_BOOTS_UUID, "0");
-                }
-            }
-        }
-    };
-
-    /**
      * В зависимости от состояния переключателя руч/авто делаем доступными или недоступными элементы управления контроллером
      */
     CompoundButton.OnCheckedChangeListener onCheckedChangeListenerSwitchMode = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (isChecked) {
-                if (mBluetoothLeService != null) {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "0");
-                }
-                buttonHat.setEnabled(false);
-                buttonJacket.setEnabled(false);
-                buttonMittens.setEnabled(false);
-                buttonBoots.setEnabled(false);
                 seekBarTemp.setEnabled(false);
             } else {
-                if (mBluetoothLeService != null) {
-                    mBluetoothLeService.setCharacteristicValueByUUID(Constants.MODE_UUID, "1");
-                }
-                buttonHat.setEnabled(true);
-                buttonJacket.setEnabled(true);
-                buttonMittens.setEnabled(true);
-                buttonBoots.setEnabled(true);
                 seekBarTemp.setEnabled(true);
             }
         }
@@ -484,9 +287,28 @@ public class MainActivity extends Activity {
                                 if (item != null) {
                                     bluetooth.cancelDiscovery();
                                     mDeviceAddress = item.split("\n")[1];
-                                    if (mBluetoothLeService != null) {
-                                        final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-                                        Log.d(TAG, "Connect request result=" + result);
+                                    if (!bluetoothClient.connect(mDeviceAddress)) {
+                                        connectErrorBuilder
+                                                .setTitle(R.string.connect_error_dialog_title)
+                                                .setMessage(R.string.connect_error_dialog_message)
+                                                .setPositiveButton(R.string.repeat_search, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        searchDeviceTask = new SearchDeviceTask();
+                                                        searchDeviceTask.execute();
+                                                    }
+                                                })
+                                                .setNegativeButton(R.string.exit, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        finishAndRemoveTask();
+                                                    }
+                                                });
+                                        AlertDialog errorDialog = connectErrorBuilder.create();
+                                        errorDialog.setCanceledOnTouchOutside(false);
+                                        errorDialog.show();
+                                    } else {
+                                        imageViewBluetooth.setImageResource(R.drawable.bluetooth_on);
                                     }
                                 }
                             }
@@ -510,5 +332,21 @@ public class MainActivity extends Activity {
             }
         }
     }
+
+    /**
+     * Конвертирование строки в массив байт
+     * @param s
+     * @return
+     */
+    private static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+
 
 }
